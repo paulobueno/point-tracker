@@ -2,12 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{team}}</title>
+    <title>{{team.name}}</title>
+    {% load static %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
 </head>
 <body>
-{{team}}<br>
-{% for jump in jumps %}
-    {{jump.date}}<br>
-{% endfor %}
+<div class="container-sm p-4">
+    <h1>{{team.name}}</h1>
+    <p>This is some text.</p>
+    <div class="col-4">
+        <table class="table table-dark table-striped">
+            <thead>
+            <tr>
+                <th scope="col"> Date</th>
+                <th scope="col"> Link</th>
+                <th scope="col"> Points</th>
+                <th scope="col"> Busts</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            </tbody>
+        </table>
+        <table class="table table-dark table-striped">
+            <thead>
+            <tr>
+                <th scope="col"> Date</th>
+                <th scope="col"> Link</th>
+                <th scope="col"> Points</th>
+                <th scope="col"> Busts</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            <tr>
+                <th scope="row"> Date</th>
+                <td> Link</td>
+                <td> Points</td>
+                <td> Busts</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<hr class="border" style="border-color: teal !important;">
 </body>
 </html>
