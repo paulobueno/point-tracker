@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FooTracker</title>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon"
+          href="https://uploads-ssl.webflow.com/639bcb5db0b7734d255d6db9/639bee7d19d6f2ae30b3440d_2194593.png">
+
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+    .navbar-foo {background:rgba(30,230,30,1);}
+    .navbar-foo .navbar-brand {color: black;}
+    .navbar-foo .navbar-nav .nav-link {color: rgba(0,0,0,1);}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="navbar-top-fixed.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-foo fixed-top rounded-pill">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="https://uploads-ssl.webflow.com/639bcb5db0b7734d255d6db9/639bee7d19d6f2ae30b3440d_2194593.png"
+                 width="30" height="30" alt="">
+            FooTracker
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Teams</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Pools</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Tracker</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Team's Performance</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<br><br><br>
+<div class="container">
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <form>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select class="form-select" id="team-select">
+                                {% for team in teams %}
+                                <option>{{team.name}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label>Date</label>
+                        <input type="date" class="form-control">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label>Pool</label>
+                    {% for i in "12345" %}
+                    <div class="col">
+                        <select class="form-select">
+                            <option>-</option>
+                            {% for point in points %}
+                            <option>{{point|first}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="row mb-3">
+                    <label>URL</label>
+                    <div class="col">
+                        <input class="form-control" type="url" placeholder="http://">
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>Points</label>
+                            <input type="number" class="form-control" placeholder="0" disabled>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label>Busts</label>
+                        <input type="number" class="form-control" placeholder="0" disabled>
+                    </div>
+                </div>
+                <table class="table table-striped" id="table-results">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Point</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Diff</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>G</td>
+                        <td>0.0</td>
+                        <td>-</td>
+                        <td>✔</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>14 (start)</td>
+                        <td>0.5</td>
+                        <td>0.5</td>
+                        <td>✔</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>14 (end)</td>
+                        <td>1.7</td>
+                        <td>1.2</td>
+                        <td>✔</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">4</th>
+                        <td>D</td>
+                        <td>2.5</td>
+                        <td>0.8</td>
+                        <td>✔</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <button type="submit" class="btn" style="background-color: rgb(30,230,30);">Save</button>
+            </form>
+        </div>
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <div class="row">
+                <label> Tracker</label>
+            </div>
+            <div class="embed-responsive embed-responsive-16by9">
+                <iframe class="embed-responsive-item" width="560" height="315"
+                        src="https://www.youtube.com/embed/2-9RDlZucU8"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                </iframe>
+            </div>
+            <div class="timerDisplay">
+                00 : 000
+            </div>
+            <button id="start-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Start/Point</button>
+            <button id="bust-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Bust</button>
+        </div>
+    </div>
+</div>
+<script src="../static/js/bootstrap.bundle.min.js"></script>
+<script>
+let [milliseconds,seconds] = [0,0];
+let timerRef = document.querySelector('.timerDisplay');
+let nIntervId;
+let currentTime = 0;
+let timeDiff = 0;
+let lastTime = 0;
+let points = 0;
+
+document.getElementById('start-button').addEventListener('click', ()=>{
+    if(!nIntervId){
+        nIntervId = setInterval(displayTimer,10);
+    }
+    if(seconds < 35) {
+        points++;
+        currentTime = seconds + (milliseconds/1000);
+        timeDiff = currentTime - lastTime;
+        timeDiff
+        registerPoint(points, currentTime, timeDiff);
+        lastTime = currentTime;
+        console.log(lastTime)
+    }
+});
+
+function displayTimer(){
+    milliseconds+=10;
+    if(milliseconds == 1000){
+        milliseconds = 0;
+        seconds++;
+        if(seconds == 35){
+            clearInterval(nIntervId);
+        }
+    }
+
+ let s = seconds < 10 ? "0" + seconds : seconds;
+ let ms = milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds;
+
+ timerRef.innerHTML = `${s} : ${ms}`;
+}
+
+function registerPoint(qty, currentTime, timeDiff) {
+  var tbodyRef = document.getElementById("table-results").getElementsByTagName('tbody')[0];
+  var newRow = tbodyRef.insertRow();
+  var cell1 = newRow.insertCell();
+  var cell2 = newRow.insertCell();
+  var cell3 = newRow.insertCell();
+  var cell4 = newRow.insertCell();
+  var cell5 = newRow.insertCell();
+  cell1.appendChild(document.createTextNode(qty.toString()));
+  cell2.appendChild(document.createTextNode('new row'));
+  cell3.appendChild(document.createTextNode(currentTime.toFixed(2).toString()));
+  cell4.appendChild(document.createTextNode(timeDiff.toFixed(2).toString()));
+  cell5.appendChild(document.createTextNode('✔'));
+}
+</script>
+</body>
+</html>

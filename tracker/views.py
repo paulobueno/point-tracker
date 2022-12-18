@@ -1,11 +1,13 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from tracker.models import Team, Jump
+from tracker.models import Team, Jump, Pool, blocks, randoms
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the polls index.")
+    context = {"teams": Team.objects.all(),
+               "points": Pool.point_1.field.choices}
+    return render(request, 'index.html', context)
 
 
 def team_page(request, team_id):
