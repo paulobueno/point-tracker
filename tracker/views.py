@@ -1,13 +1,22 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from tracker.models import Team, Jump, Pool, blocks, randoms
+from tracker.models import Team, Jump, Pool
 
 
 def index(request):
     context = {"teams": Team.objects.all(),
                "points": Pool.point_1.field.choices}
     return render(request, 'index.html', context)
+
+
+def track(request):
+    context = {"teams": Team.objects.all(),
+               "points": Pool.point_1.field.choices}
+    if request.method == "POST":
+        print("Entered in POST request")
+        print(request.POST)
+    return render(request, 'track.html', context)
 
 
 def team_page(request, team_id):
