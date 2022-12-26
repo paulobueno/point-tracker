@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-
-from tracker.models import Team, Jump, Pool
+from tracker.forms import TeamRegister
+from tracker.models import Team, Jump, Pool, Point
 
 
 def index(request):
@@ -10,12 +10,32 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+def team_register(request):
+    form_msg = ""
+    if request.method == 'POST':
+        form = TeamRegister(request.POST)
+        if form.is_valid():
+            form.save()
+            form_msg = "Team Saved"
+    else:
+        form = TeamRegister()
+    context = {"form": form,
+               "form_msg": form_msg}
+    return render(request, 'team_register.html', context)
+
+
 def track(request):
     context = {"teams": Team.objects.all(),
-               "points": Pool.point_1.field.choices}
+               "points": Point.objects.all()}
     if request.method == "POST":
         print("Entered in POST request")
         print(request.POST)
+        pool = Pool(point_1=Point.objects.get(pk=request.POST.get('pool-point1')[0]),
+                    point_2=Point.objects.get(pk=request.POST.get('pool-point2')[0]),
+                    point_3=Point.objects.get(pk=request.POST.get('pool-point3')[0]),
+                    point_4=Point.objects.get(pk=request.POST.get('pool-point4')[0]),
+                    point_5=Point.objects.get(pk=request.POST.get('pool-point5')[0]))
+        pool.save()
     return render(request, 'track.html', context)
 
 

@@ -1,48 +1,5 @@
 from django.db import models
 
-randoms = [
-    ('A', 'A'),
-    ('B', 'B'),
-    ('C', 'C'),
-    ('D', 'D'),
-    ('E', 'E'),
-    ('F', 'F'),
-    ('G', 'G'),
-    ('H', 'H'),
-    ('J', 'J'),
-    ('K', 'K'),
-    ('L', 'L'),
-    ('M', 'M'),
-    ('N', 'N'),
-    ('O', 'O'),
-    ('P', 'P'),
-    ('Q', 'Q')
-]
-blocks = [
-    ('1', '1'),
-    ('2', '2'),
-    ('3', '3'),
-    ('4', '4'),
-    ('5', '5'),
-    ('6', '6'),
-    ('7', '7'),
-    ('8', '8'),
-    ('9', '9'),
-    ('10', '10'),
-    ('11', '11'),
-    ('12', '12'),
-    ('13', '13'),
-    ('14', '14'),
-    ('15', '15'),
-    ('16', '16'),
-    ('17', '17'),
-    ('18', '18'),
-    ('19', '19'),
-    ('20', '20'),
-    ('21', '21'),
-    ('22', '22')
-]
-
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
@@ -68,12 +25,23 @@ class TeamMember(models.Model):
         return str(self.name) + " (" + str(self.nickname) + ") - " + str(self.team)
 
 
+class Point(models.Model):
+    randoms = [('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D'), ('E', 'E'),
+               ('F', 'F'), ('G', 'G'), ('H', 'H'), ('J', 'J'), ('K', 'K'),
+               ('L', 'L'), ('M', 'M'), ('N', 'N'), ('O', 'O'), ('P', 'P'), ('Q', 'Q')]
+    blocks = [(str(block), str(block)) for block in range(1, 23)]
+    name = models.CharField(max_length=2, choices=randoms + blocks, primary_key=True)
+
+    def __str__(self):
+        return str(self.name)
+
+
 class Pool(models.Model):
-    point_1 = models.CharField(max_length=10, choices=randoms + blocks, blank=True, null=True)
-    point_2 = models.CharField(max_length=10, choices=randoms + blocks, blank=True, null=True)
-    point_3 = models.CharField(max_length=10, choices=randoms + blocks, blank=True, null=True)
-    point_4 = models.CharField(max_length=10, choices=randoms + blocks, blank=True, null=True)
-    point_5 = models.CharField(max_length=10, choices=randoms + blocks, blank=True, null=True)
+    point_1 = models.ForeignKey(Point, related_name='pool_point_1', on_delete=models.CASCADE, null=True, blank=True)
+    point_2 = models.ForeignKey(Point, related_name='pool_point_2', on_delete=models.CASCADE, null=True, blank=True)
+    point_3 = models.ForeignKey(Point, related_name='pool_point_3', on_delete=models.CASCADE, null=True, blank=True)
+    point_4 = models.ForeignKey(Point, related_name='pool_point_4', on_delete=models.CASCADE, null=True, blank=True)
+    point_5 = models.ForeignKey(Point, related_name='pool_point_5', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return ', '.join([str(var) for var in
@@ -93,10 +61,22 @@ class Jump(models.Model):
         return ' - '.join([str(var) for var in [self.date, self.pool, self.team]])
 
 
+class JumpAnalytic(models.Model):
+    jump = models.ForeignKey(Jump, on_delete=models.CASCADE)
+    point_number = models.IntegerField()
+    point = models.ForeignKey(Point, on_delete=models.CASCADE)
+    time = models.DecimalField(max_digits=2, decimal_places=1)
+    diff = models.DecimalField(max_digits=2, decimal_places=1)
+    status = models.BooleanField()
+
+    def __str__(self):
+        return self.jump
+
+
 class Transition(models.Model):
     jump = models.ForeignKey(Jump, on_delete=models.CASCADE)
-    point_1 = models.CharField(max_length=10, choices=randoms + blocks)
-    point_2 = models.CharField(max_length=10, choices=randoms + blocks)
+    point_1 = models.ForeignKey(Point, related_name='transition_point_1', on_delete=models.CASCADE, null=True)
+    point_2 = models.ForeignKey(Point, related_name='transition_point_2', on_delete=models.CASCADE, null=True)
     duration_1 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
     duration_2 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
     duration_3 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)

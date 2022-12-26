@@ -1,11 +1,8 @@
 from django import forms
+from .models import Team
 
 
-class JumpForm(forms.Form):
-    team = None
-    date = forms.DateField()
-    pool = None
-    url = forms.URLField()
-    points = forms.IntegerField()
-    busts = forms.IntegerField()
-    results = None
+class TeamRegister(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ['name', 'foundation']
