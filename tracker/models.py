@@ -1,9 +1,13 @@
 from django.db import models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 
 
 class Team(models.Model):
     name = models.CharField(max_length=100)
     foundation = models.DateField()
+    instagram = models.CharField(max_length=100, blank=True)
+    website = models.URLField(blank=True)
 
     def __str__(self):
         return self.name
@@ -43,6 +47,13 @@ class Pool(models.Model):
     point_4 = models.ForeignKey(Point, related_name='pool_point_4', on_delete=models.CASCADE, null=True, blank=True)
     point_5 = models.ForeignKey(Point, related_name='pool_point_5', on_delete=models.CASCADE, null=True, blank=True)
 
+    class Meta:
+        unique_together = ('point_1',
+                           'point_2',
+                           'point_3',
+                           'point_4',
+                           'point_5')
+
     def __str__(self):
         return ', '.join([str(var) for var in
                           [self.point_1, self.point_2, self.point_3, self.point_4, self.point_5]
@@ -56,9 +67,19 @@ class Jump(models.Model):
     date = models.DateField()
     points = models.IntegerField()
     busts = models.IntegerField(default=0)
+    repetition_number = models.IntegerField(editable=False)
+
+    class Meta:
+        unique_together = ('team', 'pool', 'date', 'repetition_number')
 
     def __str__(self):
-        return ' - '.join([str(var) for var in [self.date, self.pool, self.team]])
+        return ' - '.join([str(var) for var in [self.date, self.pool, self.team]]) \
+            + " - Jump: " + str(self.repetition_number)
+
+
+@receiver(pre_save, sender=Jump)
+def add_repetition_number(sender, instance, *args, **kwargs):
+    instance.repetition_number = len(Jump.objects.all()) + 1
 
 
 class JumpAnalytic(models.Model):
@@ -70,7 +91,7 @@ class JumpAnalytic(models.Model):
     status = models.BooleanField()
 
     def __str__(self):
-        return self.jump
+        return str(self.jump) + " #" + str(self.point_number)
 
 
 class Transition(models.Model):
