@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from tracker.forms import TeamRegister, JumpRegister
@@ -44,12 +45,36 @@ def track(request):
     if request.method == "POST":
         print("Entered in POST request")
         print(request.POST)
-        pool = Pool(point_1=Point.objects.get(pk=request.POST.get('pool-point1')[0]),
-                    point_2=Point.objects.get(pk=request.POST.get('pool-point2')[0]),
-                    point_3=Point.objects.get(pk=request.POST.get('pool-point3')[0]),
-                    point_4=Point.objects.get(pk=request.POST.get('pool-point4')[0]),
-                    point_5=Point.objects.get(pk=request.POST.get('pool-point5')[0]))
+        team = request.POST.get('team-select')[0]*1
+        jump_date = request.POST.get('jump-date')
+        url = request.POST.get('url-input')[0]
+        total_points = request.POST.get('total-points')[0] * 1
+        total_busts = request.POST.get('total-busts')[0] * 1
+
+        def get_point(number):
+            point = request.POST.get('pool-point' + str(number))[0]
+            try:
+                point_id = Point.objects.get(pk=point)
+            except ObjectDoesNotExist:
+                point_id = None
+            return point_id
+
+        print([get_point(ponto) for ponto in range(1, 6)])
+        pool = Pool(point_1=get_point(1),
+                    point_2=get_point(2),
+                    point_3=get_point(3),
+                    point_4=get_point(4),
+                    point_5=get_point(5))
         pool.save()
+        print("JUMP DATE ---->", jump_date)
+        jump = Jump(team=Team.objects.get(pk=team),
+                    date=jump_date,
+                    video=url,
+                    pool=pool,
+                    points=total_points,
+                    busts=total_busts)
+        jump.save()
+
     return render(request, 'track.html', context)
 
 

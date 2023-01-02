@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -8,6 +10,7 @@ class Team(models.Model):
     foundation = models.DateField()
     instagram = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return self.name
@@ -24,6 +27,7 @@ class TeamMember(models.Model):
     nickname = models.CharField(max_length=100, null=True)
     position = models.CharField(max_length=100, null=True, choices=positions)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return str(self.name) + " (" + str(self.nickname) + ") - " + str(self.team)
@@ -35,6 +39,7 @@ class Point(models.Model):
                ('L', 'L'), ('M', 'M'), ('N', 'N'), ('O', 'O'), ('P', 'P'), ('Q', 'Q')]
     blocks = [(str(block), str(block)) for block in range(1, 23)]
     name = models.CharField(max_length=2, choices=randoms + blocks, primary_key=True)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return str(self.name)
@@ -46,18 +51,22 @@ class Pool(models.Model):
     point_3 = models.ForeignKey(Point, related_name='pool_point_3', on_delete=models.CASCADE, null=True, blank=True)
     point_4 = models.ForeignKey(Point, related_name='pool_point_4', on_delete=models.CASCADE, null=True, blank=True)
     point_5 = models.ForeignKey(Point, related_name='pool_point_5', on_delete=models.CASCADE, null=True, blank=True)
-
-    class Meta:
-        unique_together = ('point_1',
-                           'point_2',
-                           'point_3',
-                           'point_4',
-                           'point_5')
+    pool_id = models.CharField(max_length=100, primary_key=True, editable=False)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return ', '.join([str(var) for var in
-                          [self.point_1, self.point_2, self.point_3, self.point_4, self.point_5]
-                          if var is not None])
+        return str(self.pool_id)
+
+
+@receiver(pre_save, sender=Pool)
+def add_pool_id(sender, instance, *args, **kwargs):
+    pool = [instance.point_1,
+            instance.point_2,
+            instance.point_3,
+            instance.point_4,
+            instance.point_5]
+    pool_id = ', '.join([str(point) for point in pool if point is not None])
+    instance.pool_id = pool_id
 
 
 class Jump(models.Model):
@@ -68,9 +77,13 @@ class Jump(models.Model):
     points = models.IntegerField()
     busts = models.IntegerField(default=0)
     repetition_number = models.IntegerField(editable=False)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     class Meta:
-        unique_together = ('team', 'pool', 'date', 'repetition_number')
+        unique_together = (('team',
+                            'pool',
+                            'date',
+                            'repetition_number'))
 
     def __str__(self):
         return ' - '.join([str(var) for var in [self.date, self.pool, self.team]]) \
@@ -89,6 +102,7 @@ class JumpAnalytic(models.Model):
     time = models.DecimalField(max_digits=2, decimal_places=1)
     diff = models.DecimalField(max_digits=2, decimal_places=1)
     status = models.BooleanField()
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return str(self.jump) + " #" + str(self.point_number)
@@ -108,6 +122,7 @@ class Transition(models.Model):
     duration_8 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
     duration_9 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
     duration_10 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
         return str(self.point_1) + ' -> ' + str(self.point_2) + ' : ' + str(self.jump)

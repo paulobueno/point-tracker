@@ -7,7 +7,7 @@ urlpatterns = [
     path('teams', views.teams),
     path('team_register', views.team_register),
     path('jump_register', views.jump_register),
-    path('team/<int:team_id>', views.team_page),
-    path('team/<int:team_id>/jumps', views.team_jumps),
-    path('team/<int:team_id>/jump/<int:jump_id>', views.team_jump)
+    path('team/<int:team_external_id>', views.team_page),
+    path('team/<int:team_external_id>/jumps', views.team_jumps),
+    path('team/<int:team_external_id>/jump/<int:jump_external_id>', views.team_jump)
 ]
