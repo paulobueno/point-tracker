@@ -1,3 +1,5 @@
+import uuid
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.http import HttpResponse
@@ -52,10 +54,10 @@ def track(request):
         total_busts = request.POST.get('total-busts')
 
         def get_point(number):
-            point = request.POST.get('pool-point' + str(number))[0]
-            try:
-                point_id = Point.objects.get(pk=point)
-            except ObjectDoesNotExist:
+            point = request.POST.get('pool-point' + str(number))
+            if point != "-":
+                point_id = Point.objects.get(external_id=uuid.UUID(point))
+            else:
                 point_id = None
             return point_id
 
@@ -65,28 +67,34 @@ def track(request):
                     point_4=get_point(4),
                     point_5=get_point(5))
         pool.save()
-        jump = Jump(team=Team.objects.get(pk=team),
+        jump = Jump(team=Team.objects.get(external_id=uuid.UUID(team)),
                     date=jump_date,
                     video=url,
                     pool=pool,
                     points=total_points,
                     busts=total_busts)
         jump.save()
-        jump_points_analytics = list(zip(request.POST.get('point-number'),
-                                         request.POST.get('point-figure'),
-                                         request.POST.get('current-time'),
-                                         request.POST.get('time-diff'),
-                                         request.POST.get('point-status')))
+
+        def change_to_bool(value):
+            if value == "✔":
+                return True
+            else:
+                return False
+
+        jump_points_analytics = list(zip(request.POST.getlist('point-number'),
+                                         request.POST.getlist('point-figure'),
+                                         request.POST.getlist('current-time'),
+                                         request.POST.getlist('time-diff'),
+                                         [change_to_bool(status) for status in request.POST.getlist('point-status')]))
         with transaction.atomic():
             for jump_point in jump_points_analytics:
                 JumpAnalytic(
                     jump=jump,
                     point_number=jump_point[0],
-                    point=jump_point[1],
+                    point=Point.objects.get(external_id=uuid.UUID(jump_point[1])),
                     time=jump_point[2],
                     diff=jump_point[3],
                     status=jump_point[4]).save()
-
 
     return render(request, 'track.html', context)
 
