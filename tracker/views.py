@@ -1,8 +1,9 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from tracker.forms import TeamRegister, JumpRegister
-from tracker.models import Team, Jump, Pool, Point
+from tracker.models import Team, Jump, Pool, Point, JumpAnalytic
 
 
 def index(request):
@@ -43,13 +44,12 @@ def track(request):
     context = {"teams": Team.objects.all(),
                "points": Point.objects.all()}
     if request.method == "POST":
-        print("Entered in POST request")
         print(request.POST)
-        team = request.POST.get('team-select')[0]*1
+        team = request.POST.get('team-select')
         jump_date = request.POST.get('jump-date')
-        url = request.POST.get('url-input')[0]
-        total_points = request.POST.get('total-points')[0] * 1
-        total_busts = request.POST.get('total-busts')[0] * 1
+        url = request.POST.get('url-input')
+        total_points = request.POST.get('total-points')
+        total_busts = request.POST.get('total-busts')
 
         def get_point(number):
             point = request.POST.get('pool-point' + str(number))[0]
@@ -59,14 +59,12 @@ def track(request):
                 point_id = None
             return point_id
 
-        print([get_point(ponto) for ponto in range(1, 6)])
         pool = Pool(point_1=get_point(1),
                     point_2=get_point(2),
                     point_3=get_point(3),
                     point_4=get_point(4),
                     point_5=get_point(5))
         pool.save()
-        print("JUMP DATE ---->", jump_date)
         jump = Jump(team=Team.objects.get(pk=team),
                     date=jump_date,
                     video=url,
@@ -74,6 +72,21 @@ def track(request):
                     points=total_points,
                     busts=total_busts)
         jump.save()
+        jump_points_analytics = list(zip(request.POST.get('point-number'),
+                                         request.POST.get('point-figure'),
+                                         request.POST.get('current-time'),
+                                         request.POST.get('time-diff'),
+                                         request.POST.get('point-status')))
+        with transaction.atomic():
+            for jump_point in jump_points_analytics:
+                JumpAnalytic(
+                    jump=jump,
+                    point_number=jump_point[0],
+                    point=jump_point[1],
+                    time=jump_point[2],
+                    diff=jump_point[3],
+                    status=jump_point[4]).save()
+
 
     return render(request, 'track.html', context)
 

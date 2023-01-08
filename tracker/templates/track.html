@@ -11,7 +11,7 @@
                             <select class="form-select" name="team-select" id="team-select">
                                 <option>-</option>
                                 {% for team in teams %}
-                                <option value="{{team.id}}">{{team.name}}</option>
+                                <option value="{{team.external_id}}">{{team.name}}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -28,7 +28,7 @@
                         <select name="pool-point{{i}}" id="pool-point{{i}}" class="form-select">
                             <option>-</option>
                             {% for point in points %}
-                            <option value="{{point}}">{{point}}</option>
+                            <option value="{{point.external_id}}">{{point}}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -192,13 +192,15 @@ function getPoolPoints() {
     for (let i = 1; i <= 5; i++) {
         var str = "pool-point";
         str += i;
-        var point = document.getElementById(str).value;
-        if (point != "-") {
-            if (blocks.includes(point)) {
-                pool.push(point.concat(' (start)'));
-                pool.push(point.concat(' (end)'));
+        var point = document.getElementById(str);
+        var pointValue = point.options[point.selectedIndex].value;
+        var pointText = point.options[point.selectedIndex].text;
+        if (pointText != "-") {
+            if (blocks.includes(pointText)) {
+                pool.push([pointValue, pointText.concat(' (start)')]);
+                pool.push([pointValue, pointText.concat(' (end)')]);
             } else {
-            pool.push(point);
+            pool.push([pointValue, pointText]);
             }
         }
     }
@@ -224,12 +226,12 @@ function registerPoint(qty, currentTime, timeDiff, pointStatus) {
   var cell4 = newRow.insertCell();
   var cell5 = newRow.insertCell();
   newRow.appendChild(createInput("point-number",(qty).toString()));
-  newRow.appendChild(createInput("point-figure",pointFigure));
+  newRow.appendChild(createInput("point-figure",pointFigure[0]));
   newRow.appendChild(createInput("current-time",currentTime.toFixed(2).toString()));
   newRow.appendChild(createInput("time-diff",timeDiff.toFixed(2).toString()));
   newRow.appendChild(createInput("point-status",pointStatus));
   cell1.appendChild(document.createTextNode((qty).toString()));
-  cell2.appendChild(document.createTextNode(pointFigure));
+  cell2.appendChild(document.createTextNode(pointFigure[1]));
   cell3.appendChild(document.createTextNode(currentTime.toFixed(2).toString()));
   cell4.appendChild(document.createTextNode(timeDiff.toFixed(2).toString()));
   cell5.appendChild(document.createTextNode(pointStatus));
