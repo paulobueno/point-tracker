@@ -92,15 +92,16 @@
     </div>
 </div>
 <script>
+let blocks = Array.from({length: 22}, (_, i) => i + 1).map(num => num.toString());
 let [milliseconds,seconds] = [0,0];
 let timerRef = document.querySelector('.timerDisplay');
 let nIntervId;
 let currentTime = 0;
 let timeDiff = 0;
 let lastTime = 0;
+let pointAnalytics = [];
 let points = 0;
 let busts = 0;
-let blocks = ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22"];
 
 function resetResults() {
 clearInterval(nIntervId);
@@ -116,6 +117,7 @@ timerRef.innerHTML = "00 : 000";
 updatePoints();
 const myNode = document.getElementById("table-results").getElementsByTagName('tbody')[0];
 myNode.innerHTML = "";
+pointAnalytics = [];
 }
 
 function getVideoId(url) {
@@ -138,35 +140,58 @@ function updatePoints() {
 }
 
 function startButton() {
-    if(!nIntervId){
-            nIntervId = setInterval(displayTimer,10);
-        }
-        if(seconds < 35) {
-            currentTime = seconds + (milliseconds/1000);
-            timeDiff = currentTime - lastTime;
-            lastTime = currentTime;
-            if (points != 0) {
-                registerPoint(points, currentTime, timeDiff, '✔');
-                updatePoints();
-                }
-            points++;
-        }
+    if(!nIntervId) {nIntervId = setInterval(displayTimer,10);}
+    if(seconds > 0 && seconds < 35) {
+        var pool = getPoolPoints();
+        var currentPointFigure = pool[(pointAnalytics.length)%pool.length];
+        currentTime = seconds + (milliseconds/1000);
+        timeDiff = currentTime - lastTime;
+        lastTime = currentTime;
+        points++;
+        pointAnalytics.push({
+            "figure_uuid": currentPointFigure[0],
+            "figure_text": currentPointFigure[1],
+            "is_block": currentPointFigure[2],
+            "points": points,
+            "current_time": currentTime,
+            "time_diff": timeDiff,
+            "is_valid_point": true
+        });
+        if (pointAnalytics.length > 1
+            && pointAnalytics.at(-1)['figure_uuid'] == pointAnalytics.at(-2)['figure_uuid']
+            && !pointAnalytics.at(-2)['is_valid_point'])
+            {points--;}
+        registerPoint(pointAnalytics.length, currentTime, timeDiff, '✔');
+        updatePoints();
+    }
 }
 
 document.getElementById('start-button').addEventListener('click', startButton);
 
 function bustButton() {
-    if(seconds < 35) {
-            busts++;
-            currentTime = seconds + (milliseconds/1000);
-            timeDiff = currentTime - lastTime;
-            lastTime = currentTime;
-            if (points != 0) {
-                registerPoint(points, currentTime, timeDiff, '✘');
-                updatePoints();
-                }
-            points++;
-        }
+    if(seconds > 0 && seconds < 35) {
+        busts++;
+        var pool = getPoolPoints();
+        var currentPointFigure = pool[(pointAnalytics.length)%pool.length];
+        currentTime = seconds + (milliseconds/1000);
+        timeDiff = currentTime - lastTime;
+        lastTime = currentTime;
+        pointAnalytics.push({
+            "figure_uuid": currentPointFigure[0],
+            "figure_text": currentPointFigure[1],
+            "is_block": currentPointFigure[2],
+            "points": points,
+            "current_time": currentTime,
+            "time_diff": timeDiff,
+            "is_valid_point": false
+        });
+        if (pointAnalytics.length > 1
+            && pointAnalytics.at(-1)['figure_uuid'] == pointAnalytics.at(-2)['figure_uuid']
+            && pointAnalytics.at(-2)['is_valid_point'])
+            {points--;}
+        registerPoint(pointAnalytics.length, currentTime, timeDiff, '✘');
+        updatePoints();
+    }
 }
 
 document.getElementById('bust-button').addEventListener('click', bustButton);
@@ -197,10 +222,10 @@ function getPoolPoints() {
         var pointText = point.options[point.selectedIndex].text;
         if (pointText != "-") {
             if (blocks.includes(pointText)) {
-                pool.push([pointValue, pointText.concat(' (start)')]);
-                pool.push([pointValue, pointText.concat(' (end)')]);
+                pool.push([pointValue, pointText.concat(' (start)'), true]);
+                pool.push([pointValue, pointText.concat(' (end)'), true]);
             } else {
-            pool.push([pointValue, pointText]);
+            pool.push([pointValue, pointText, false]);
             }
         }
     }
