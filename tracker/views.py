@@ -2,7 +2,7 @@ import uuid
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
-from tracker.forms import TeamRegister, JumpRegister
+from tracker.forms import TeamRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic
 
 
@@ -24,20 +24,6 @@ def team_register(request):
     context = {"form": form,
                "form_msg": form_msg}
     return render(request, 'team_register.html', context)
-
-
-def jump_register(request):
-    form_msg = ""
-    if request.method == 'POST':
-        form = JumpRegister(request.POST)
-        if form.is_valid():
-            form.save()
-            form_msg = "Team Saved"
-    else:
-        form = JumpRegister()
-    context = {"form": form,
-               "form_msg": form_msg}
-    return render(request, 'jump_register.html', context)
 
 
 def track(request):

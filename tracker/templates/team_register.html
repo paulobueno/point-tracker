@@ -1,9 +1,48 @@
 {% extends 'main.html' %}
 {% block content %}
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit">
-</form>
+<div class="container">
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label">Team's name</label>
+                        {{ form.name }}
+                        <div class="invalid-feedback">
+                            Your username is required.
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Foundation</label>
+                        {{ form.foundation }}
+                        <div class="invalid-feedback">
+                            Your username is required.
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Instagram</label>
+                        <div class="input-group has-validation">
+                            <span class="input-group-text">@</span>
+                            {{ form.instagram }}
+                            <div class="invalid-feedback">
+                                Your username is required.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Website <span class="text-muted">(Optional)</span></label>
+                        {{ form.website }}
+                        <div class="invalid-feedback">
+                            Please enter a valid email address for shipping updates.
+                        </div>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <input class="w-20 btn navbar-foo" type="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+</div>
 {{form_msg}}
 {% endblock %}
