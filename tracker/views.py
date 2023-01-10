@@ -1,6 +1,4 @@
 import uuid
-
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -92,8 +90,8 @@ def track(request):
                     jump=jump,
                     point_number=jump_point[0],
                     point=Point.objects.get(external_id=uuid.UUID(jump_point[1])),
-                    time=jump_point[2],
-                    diff=jump_point[3],
+                    time=jump_point[2] * 1,
+                    diff=jump_point[3] * 1,
                     status=jump_point[4]).save()
 
     return render(request, 'track.html', context)
