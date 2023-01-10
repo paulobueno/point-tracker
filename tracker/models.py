@@ -3,14 +3,22 @@ import uuid
 from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
+from django_countries.fields import CountryField
 
 
 class Team(models.Model):
+    categories = [
+        ('R', 'Rookie'),
+        ('I', 'Inter'),
+        ('O', 'Open'),
+    ]
     name = models.CharField(max_length=100)
-    foundation = models.DateField()
-    instagram = models.CharField(max_length=100, blank=True)
-    website = models.URLField(blank=True)
+    category = models.CharField(max_length=100, choices=categories, null=True, blank=True)
+    foundation = models.DateField(null=True, blank=True)
+    instagram = models.CharField(max_length=100, null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    country = CountryField(null=True, blank=True)
 
     def __str__(self):
         return self.name

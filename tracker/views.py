@@ -92,7 +92,7 @@ def team_page(request, team_id):
 
 def teams(request):
     teams = Team.objects.all()
-    return HttpResponse(teams)
+    return render(request, 'teams.html', {'teams': teams})
 
 
 def team_jumps(request, jump_id):

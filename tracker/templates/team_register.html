@@ -21,6 +21,14 @@
                         </div>
                     </div>
                     <div class="col-sm-6">
+                        <label class="form-label">Category</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label">Country</label>
+                        {{ form.country }}
+                    </div>
+                    <div class="col-sm-6">
                         <label class="form-label">Instagram</label>
                         <div class="input-group has-validation">
                             <span class="input-group-text">@</span>
@@ -31,7 +39,7 @@
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label">Website <span class="text-muted">(Optional)</span></label>
+                        <label class="form-label">Website</label>
                         {{ form.website }}
                         <div class="invalid-feedback">
                             Please enter a valid email address for shipping updates.
