@@ -1,15 +1,31 @@
 import uuid
 from django.db import transaction
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
-from tracker.forms import TeamRegister
-from tracker.models import Team, Jump, Pool, Point, JumpAnalytic
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
+from tracker.forms import TeamRegister, AthleteRegister
+from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember
+from django.contrib.auth import authenticate, login
 
 
 def index(request):
     context = {"teams": Team.objects.all(),
                "points": Pool.point_1.field.choices}
     return render(request, 'index.html', context)
+
+
+def athlete_register(request):
+    form_msg = ""
+    if request.method == 'POST':
+        form = AthleteRegister(request.POST)
+        if form.is_valid():
+            form.save()
+            form_msg = "Athlete Saved"
+    else:
+        form = AthleteRegister()
+    context = {"form": form,
+               "form_msg": form_msg}
+    return render(request, 'athlete_register.html', context)
 
 
 def team_register(request):
@@ -28,9 +44,10 @@ def team_register(request):
 
 def track(request):
     context = {"teams": Team.objects.all(),
-               "points": Point.objects.all()}
+               "points": Point.objects.all(),
+               "positions": sorted([position[1] for position in TeamMember.position.field.choices]),
+               "athletes": TeamMember.objects.all()}
     if request.method == "POST":
-        print(request.POST)
         team = request.POST.get('team-select')
         jump_date = request.POST.get('jump-date')
         url = request.POST.get('url-input')
@@ -93,6 +110,17 @@ def team_page(request, team_id):
 def teams(request):
     teams = Team.objects.all()
     return render(request, 'teams.html', {'teams': teams})
+
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST['email-input']
+        password = request.POST['password-input']
+        user = authenticate(request, username=email, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect(teams)
+    return render(request, 'login.html')
 
 
 def team_jumps(request, jump_id):

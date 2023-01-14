@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container">
+    <form action="#" method="post">
+        {% csrf_token %}
+        <div class="col-sm-4">
+            <div>
+                <label class="form-label">Email</label>
+            </div>
+            <div class="col">
+                <input id="email-input" name="email-input" class="form-control" type="email">
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div>
+                <label class="form-label">Password</label>
+            </div>
+            <div class="col">
+                <input id="password-input" name="password-input" class="form-control" type="password">
+            </div>
+        </div>
+        <hr class="my-4 col-sm-4">
+        <input class="w-20 btn navbar-foo" type="submit" value="Submit">
+    </form>
+</div>
+{% endblock %}

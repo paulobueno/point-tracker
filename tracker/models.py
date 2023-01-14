@@ -35,6 +35,7 @@ class TeamMember(models.Model):
     nickname = models.CharField(max_length=100, null=True)
     position = models.CharField(max_length=100, null=True, choices=positions)
     team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True)
+    country = CountryField(null=True, blank=True)
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
@@ -79,6 +80,7 @@ def add_pool_id(sender, instance, *args, **kwargs):
 
 class Jump(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team_members = models.ManyToManyField(TeamMember)
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE)
     video = models.URLField(null=True, blank=True)
     date = models.DateField()
@@ -100,7 +102,10 @@ class Jump(models.Model):
 
 @receiver(pre_save, sender=Jump)
 def add_repetition_number(sender, instance, *args, **kwargs):
-    instance.repetition_number = len(Jump.objects.all()) + 1
+    jumps = Jump.objects.filter(team=instance.team)\
+                        .filter(pool=instance.pool)\
+                        .filter(date=instance.date)
+    instance.repetition_number = len(jumps) + 1
 
 
 class JumpAnalytic(models.Model):

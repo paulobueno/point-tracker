@@ -22,6 +22,21 @@
                     </div>
                 </div>
                 <div class="row mb-3">
+                    {% for position in positions %}
+                        <div class="col">
+                            <div class="form-group">
+                                <label>{{position}}</label>
+                                <select class="form-select" name="athlete-select" id="athlete-select">
+                                <option>-</option>
+                                {% for athlete in athletes %}
+                                <option value="{{athletes.external_id}}">{{athlete.nickname}}</option>
+                                {% endfor %}
+                            </select>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="row mb-3">
                     <label>Pool</label>
                     {% for i in "12345" %}
                     <div class="col">
