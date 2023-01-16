@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container">
+    <table class="table table-striped" id="table-results">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Nickname</th>
+            <th scope="col">Country</th>
+            <th scope="col">Team</th>
+            <th scope="col">Position</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for athlete in athletes %}
+        <tr>
+            <td>{{athlete.name}}</td>
+            <td>{{athlete.nickname}}</td>
+            <td><i class="{{ athlete.country.flag_css }}"></i> {{athlete.country.name}}</td>
+            <td>{{athlete.team}}</td>
+            <td>{{athlete.get_position_display}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -108,8 +108,13 @@ def team_page(request, team_id):
 
 
 def teams(request):
-    teams = Team.objects.all()
-    return render(request, 'teams.html', {'teams': teams})
+    teams_insts = Team.objects.all()
+    return render(request, 'teams.html', {'teams': teams_insts})
+
+
+def athletes(request):
+    athletes_insts = TeamMember.objects.all()
+    return render(request, 'athletes.html', {'athletes': athletes_insts})
 
 
 def login_view(request):

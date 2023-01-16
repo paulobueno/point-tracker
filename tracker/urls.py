@@ -7,6 +7,7 @@ urlpatterns = [
     path('teams', views.teams),
     path('team_register', views.team_register),
     path('athlete_register', views.athlete_register),
+    path('athletes', views.athletes),
     path('login', views.login_view),
     path('team/<uuid:team_external_id>', views.team_page),
     path('jumps/<uuid:team_external_id>', views.team_jumps),
