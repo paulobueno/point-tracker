@@ -128,8 +128,11 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-def team_jumps(request, jump_id):
-    return None
+def team_jumps(request, team_external_id):
+    team = Team.objects.get(external_id=team_external_id)
+    jumps = Jump.objects.filter(team=team)
+    return render(request, 'team.html', {'team': team,
+                                         'jumps': jumps})
 
 
 def team_jump(request, team_id, jump_id):

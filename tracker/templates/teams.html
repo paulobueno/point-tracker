@@ -17,10 +17,10 @@
         <tbody>
         {% for team in teams %}
         <tr>
-            <td>{{team.name}}</td>
+            <td><a href="{% url 'team_jumps' team.external_id %}">{{team.name}}</a></td>
             <td>{{team.get_category_display}}</td>
             <td>{{team.foundation}}</td>
-            <td><i class="{{ team.country.flag_css }}"></i></td>
+            <td><i class="{{ team.country.flag_css }}"></i> {{team.country.name}}</td>
             <td>{{team.instagram}}</td>
             <td>0</td>
             <td>0</td>
