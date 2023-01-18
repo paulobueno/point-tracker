@@ -112,8 +112,8 @@ class JumpAnalytic(models.Model):
     jump = models.ForeignKey(Jump, on_delete=models.CASCADE)
     point_number = models.IntegerField()
     point = models.ForeignKey(Point, on_delete=models.CASCADE)
-    time = models.DecimalField(max_digits=2, decimal_places=1)
-    diff = models.DecimalField(max_digits=2, decimal_places=1)
+    time = models.DecimalField(max_digits=5, decimal_places=2)
+    diff = models.DecimalField(max_digits=5, decimal_places=2)
     status = models.BooleanField()
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
@@ -123,19 +123,10 @@ class JumpAnalytic(models.Model):
 
 class Transition(models.Model):
     jump = models.ForeignKey(Jump, on_delete=models.CASCADE)
-    point_1 = models.ForeignKey(Point, related_name='transition_point_1', on_delete=models.CASCADE, null=True)
-    point_2 = models.ForeignKey(Point, related_name='transition_point_2', on_delete=models.CASCADE, null=True)
-    duration_1 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_2 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_3 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_4 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_5 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_6 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_7 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_8 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_9 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
-    duration_10 = models.DecimalField(null=True, blank=True, max_digits=2, decimal_places=1)
+    point_1 = models.ForeignKey(Point, related_name='transition_point_1', on_delete=models.CASCADE)
+    point_2 = models.ForeignKey(Point, related_name='transition_point_2', on_delete=models.CASCADE)
+    duration = models.DecimalField(max_digits=5, decimal_places=2)
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
 
     def __str__(self):
-        return str(self.point_1) + ' -> ' + str(self.point_2) + ' : ' + str(self.jump)
+        return str(self.point_1) + ' -> ' + str(self.point_2) + ' - ' + str(self.duration)

@@ -1,7 +1,55 @@
 {% extends 'main.html' %}
 {% block content %}
 {{team}}<br>
-{% for jump in jumps %}
-{{jump}}<br>
-{% endfor %}
+
+<div class="container">
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Jumps</p>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Pool</th>
+                    <th scope="col">Points</th>
+                    <th scope="col">Busts</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for jump in jumps %}
+                <tr>
+                    <td>{{jump.date}}</td>
+                    <td>{{jump.pool}}</td>
+                    <td>{{jump.points}}</td>
+                    <td>{{jump.busts}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Transitions</p>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Point A</th>
+                    <th scope="col">Point B</th>
+                    <th scope="col">Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for transition in transitions %}
+                <tr>
+                    <td>{{transition.point_1}}</td>
+                    <td>{{transition.point_2}}</td>
+                    <td>{{transition.duration}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}

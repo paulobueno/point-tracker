@@ -17,7 +17,7 @@
         <tbody>
         {% for team in teams %}
         <tr>
-            <td><a href="{% url 'team_jumps' team.external_id %}">{{team.name}}</a></td>
+            <td><a class="link-success" href="{% url 'team_jumps' team.external_id %}">{{team.name}}</a></td>
             <td>{{team.get_category_display}}</td>
             <td>{{team.foundation}}</td>
             <td><i class="{{ team.country.flag_css }}"></i> {{team.country.name}}</td>

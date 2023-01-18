@@ -2,9 +2,8 @@ import uuid
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
 from tracker.forms import TeamRegister, AthleteRegister
-from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember
+from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition
 from django.contrib.auth import authenticate, login
 
 
@@ -93,9 +92,21 @@ def track(request):
                     jump=jump,
                     point_number=jump_point[0],
                     point=Point.objects.get(external_id=uuid.UUID(jump_point[1])),
-                    time=jump_point[2] * 1,
-                    diff=jump_point[3] * 1,
+                    time=float(jump_point[2]),
+                    diff=float(jump_point[3]),
                     status=jump_point[4]).save()
+
+        with transaction.atomic():
+            for i, point_2 in enumerate(jump_points_analytics[1:]):
+                point_1 = jump_points_analytics[i]
+                print("point 1", point_1)
+                print("point 2", point_2)
+                Transition(
+                    jump=jump,
+                    point_1=Point.objects.get(external_id=uuid.UUID(point_1[1])),
+                    point_2=Point.objects.get(external_id=uuid.UUID(point_2[1])),
+                    duration=float(point_2[3])
+                ).save()
 
     return render(request, 'track.html', context)
 
@@ -131,8 +142,10 @@ def login_view(request):
 def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
+    transitions = Transition.objects.filter(jump__in=jumps)
     return render(request, 'team.html', {'team': team,
-                                         'jumps': jumps})
+                                         'jumps': jumps,
+                                         'transitions': transitions})
 
 
 def team_jump(request, team_id, jump_id):
