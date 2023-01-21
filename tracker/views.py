@@ -1,6 +1,6 @@
 import uuid
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition
@@ -137,6 +137,20 @@ def login_view(request):
             login(request, user)
             return redirect(teams)
     return render(request, 'login.html')
+
+
+def heatmap_transitions_data(request, team_external_id):
+    team = Team.objects.get(external_id=team_external_id)
+    jumps = Jump.objects.filter(team=team)
+    transitions = Transition.objects.filter(jump__in=jumps)
+    data = []
+    for row in transitions.values():
+        row_json = {'start': str(row.get('point_1_id')),
+                    'end': str(row.get('point_2_id')),
+                    'duration': row.get('duration')}
+        data.append(row_json)
+    data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
+    return JsonResponse(data, safe=False)
 
 
 def team_jumps(request, team_external_id):
