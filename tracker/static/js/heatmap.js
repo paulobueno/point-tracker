@@ -1,4 +1,4 @@
-// set the dimensions and margins of the graph
+    // set the dimensions and margins of the graph
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
   width = 450 - margin.left - margin.right,
   height = 450 - margin.top - margin.bottom;
@@ -12,11 +12,11 @@ const svg = d3.select("#my_dataviz")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
 //Read the data
-d3.csv("{% url 'heatmap_transition' team.external_id %}").then(function(data) {
+d3.json(data_url).then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  const myGroups = Array.from(new Set(data.map(d => d.start)))
-  const myVars = Array.from(new Set(data.map(d => d.end)))
+  const myGroups = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22']
+  const myVars = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22'].reverse()
 
   // Build X scales and axis:
   const x = d3.scaleBand()
@@ -24,7 +24,7 @@ d3.csv("{% url 'heatmap_transition' team.external_id %}").then(function(data) {
     .domain(myGroups)
     .padding(0.05);
   svg.append("g")
-    .style("font-size", 15)
+    .style("font-size", 8)
     .attr("transform", `translate(0, ${height})`)
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
@@ -35,14 +35,14 @@ d3.csv("{% url 'heatmap_transition' team.external_id %}").then(function(data) {
     .domain(myVars)
     .padding(0.05);
   svg.append("g")
-    .style("font-size", 15)
+    .style("font-size", 8)
     .call(d3.axisLeft(y).tickSize(0))
     .select(".domain").remove()
 
   // Build color scale
   const myColor = d3.scaleSequential()
-    .interpolator(d3.interpolateInferno)
-    .domain([1,100])
+    .interpolator(d3.interpolateRdYlGn)
+    .domain([-2,0])
 
   // create a tooltip
   const tooltip = d3.select("#my_dataviz")
@@ -87,7 +87,7 @@ d3.csv("{% url 'heatmap_transition' team.external_id %}").then(function(data) {
       .attr("ry", 4)
       .attr("width", x.bandwidth() )
       .attr("height", y.bandwidth() )
-      .style("fill", function(d) { return myColor(d.duration)} )
+      .style("fill", function(d) { return myColor(-d.duration)} )
       .style("stroke-width", 4)
       .style("stroke", "none")
       .style("opacity", 0.8)
@@ -95,4 +95,3 @@ d3.csv("{% url 'heatmap_transition' team.external_id %}").then(function(data) {
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
 })
-
