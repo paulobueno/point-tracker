@@ -3,9 +3,6 @@
 {% load static %}
 
 <script src="{% static '/d3js/d3.v6.js' %}"></script>
-
-{{team}}<br>
-
 <div class="container">
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
@@ -22,7 +19,7 @@
                 <tbody>
                 {% for jump in jumps %}
                 <tr>
-                    <td>{{jump.date}}</td>
+                    <td>{{jump.date|date:"Y-m-d"}}</td>
                     <td>{{jump.pool}}</td>
                     <td>{{jump.points}}</td>
                     <td>{{jump.busts}}</td>
@@ -32,7 +29,7 @@
             </table>
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
-            <p class="h2">Transitions Map</p>
+            <p class="h2">Transitions Map (Avg Time)</p>
             <div id="my_dataviz"></div>
         </div>
     </div>

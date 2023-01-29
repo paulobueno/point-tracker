@@ -1,7 +1,7 @@
     // set the dimensions and margins of the graph
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
-  width = 450 - margin.left - margin.right,
-  height = 450 - margin.top - margin.bottom;
+  width = 650 - margin.left - margin.right,
+  height = 500 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 const svg = d3.select("#my_dataviz")
@@ -15,13 +15,12 @@ const svg = d3.select("#my_dataviz")
 d3.json(data_url).then(function(data) {
 
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  const myGroups = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22']
-  const myVars = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22'].reverse()
+  const points = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22']
 
   // Build X scales and axis:
   const x = d3.scaleBand()
     .range([ 0, width ])
-    .domain(myGroups)
+    .domain(points)
     .padding(0.05);
   svg.append("g")
     .style("font-size", 8)
@@ -32,7 +31,7 @@ d3.json(data_url).then(function(data) {
   // Build Y scales and axis:
   const y = d3.scaleBand()
     .range([ height, 0 ])
-    .domain(myVars)
+    .domain(points)
     .padding(0.05);
   svg.append("g")
     .style("font-size", 8)
@@ -65,9 +64,9 @@ d3.json(data_url).then(function(data) {
   }
   const mousemove = function(event,d) {
     tooltip
-      .html("The exact value of<br>this cell is: " + d.duration)
-      .style("left", (event.x)/2 + "px")
-      .style("top", (event.y)/2 + "px")
+      .html("Transition 'from -> to': " + d.start + " -> " + d.end + "<br>Average time executed: " + d.duration + "s")
+      .style("left", (event.x) + "px")
+      .style("top", (event.y) + "px")
   }
   const mouseleave = function(event,d) {
     tooltip
@@ -81,8 +80,8 @@ d3.json(data_url).then(function(data) {
   svg.selectAll()
     .data(data, function(d) {return d.start+':'+d.end;})
     .join("rect")
-      .attr("x", function(d) { return x(d.start) })
-      .attr("y", function(d) { return y(d.end) })
+      .attr("x", function(d) { return x(d.end) })
+      .attr("y", function(d) { return y(d.start) })
       .attr("rx", 4)
       .attr("ry", 4)
       .attr("width", x.bandwidth() )
