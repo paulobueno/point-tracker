@@ -1,4 +1,6 @@
 import uuid
+from statistics import mean
+
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -139,7 +141,7 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-def heatmap_transitions_data(request, team_external_id):
+def heatmap_transitions_data(_, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps)
@@ -149,6 +151,41 @@ def heatmap_transitions_data(request, team_external_id):
                     'end': str(row.get('point_2_id')),
                     'duration': row.get('duration')}
         data.append(row_json)
+    data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
+    return JsonResponse(data, safe=False)
+
+
+def heatmap_transitions_comparison_data(_, team_external_id):
+    team = Team.objects.get(external_id=team_external_id)
+    team_jumps = Jump.objects.filter(team=team)
+    other_teams_jumps = Jump.objects.exclude(team=team)
+    team_transitions = Transition.objects.filter(jump__in=team_jumps)
+    other_teams_transitions = Transition.objects.exclude(jump__in=team_jumps)
+    other_teams_data = {}
+    team_data = {}
+    data = []
+    for row in team_transitions.values():
+        transition_key = '-'.join([row.get('point_1_id'), row.get('point_2_id')])
+        transition_data = team_data.get(transition_key, [])
+        transition_data.append(float(row.get('duration')))
+        team_data.update({transition_key: transition_data})
+    for key in team_data.keys():
+        team_data[key] = mean(team_data[key])
+    for row in other_teams_transitions.values():
+        transition_key = '-'.join([row.get('point_1_id'), row.get('point_2_id')])
+        transition_data = other_teams_data.get(transition_key, [])
+        transition_data.append(float(row.get('duration')))
+        other_teams_data.update({transition_key: transition_data})
+    for key in other_teams_data.keys():
+        other_teams_data[key] = mean(other_teams_data[key])
+    for team_transition in team_data.keys():
+        for other_teams_transition in other_teams_data.keys():
+            if team_transition == other_teams_transition:
+                start, end = team_transition.split('-')
+                row_json = {'start': start,
+                            'end': end,
+                            'duration': team_data[team_transition]-other_teams_data[team_transition]}
+                data.append(row_json)
     data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
     return JsonResponse(data, safe=False)
 

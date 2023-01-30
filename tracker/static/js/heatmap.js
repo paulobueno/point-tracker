@@ -1,19 +1,16 @@
-    // set the dimensions and margins of the graph
+function genHeatMap(jsonData, selectedId) {
+d3.json(jsonData).then(function(data) {
+console.log(jsonData);
+console.log(selectedId);
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
-  width = 650 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
-
-// append the svg object to the body of the page
-const svg = d3.select("#my_dataviz")
-.append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-.append("g")
-  .attr("transform", `translate(${margin.left}, ${margin.top})`);
-
-//Read the data
-d3.json(data_url).then(function(data) {
-
+      width = 650 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom,
+      svg = d3.select(selectedId)
+              .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
   const points = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22']
 
@@ -44,7 +41,7 @@ d3.json(data_url).then(function(data) {
     .domain([-2,0])
 
   // create a tooltip
-  const tooltip = d3.select("#my_dataviz")
+  const tooltip = d3.select(selectedId)
     .append("div")
     .style("opacity", 0)
     .attr("class", "tooltip")
@@ -65,8 +62,7 @@ d3.json(data_url).then(function(data) {
   const mousemove = function(event,d) {
     tooltip
       .html("Transition 'from -> to': " + d.start + " -> " + d.end + "<br>Average time executed: " + d.duration + "s")
-      .style("left", (event.x) + "px")
-      .style("top", (event.y) + "px")
+
   }
   const mouseleave = function(event,d) {
     tooltip
@@ -94,3 +90,4 @@ d3.json(data_url).then(function(data) {
     .on("mousemove", mousemove)
     .on("mouseleave", mouseleave)
 })
+}
