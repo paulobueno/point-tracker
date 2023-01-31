@@ -27,7 +27,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda v: [s.strip() for s in v.split(',')])
 
 LOGIN_URL = '/login'
-SESSION_COOKIE_AGE = 10
+SESSION_COOKIE_AGE = 60*60
 
 # Application definition
 
