@@ -1,6 +1,7 @@
 import uuid
 from statistics import mean
 
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -15,6 +16,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
+@login_required
 def athlete_register(request):
     form_msg = ""
     if request.method == 'POST':
@@ -29,6 +31,7 @@ def athlete_register(request):
     return render(request, 'athlete_register.html', context)
 
 
+@login_required
 def team_register(request):
     form_msg = ""
     if request.method == 'POST':
@@ -43,6 +46,7 @@ def team_register(request):
     return render(request, 'team_register.html', context)
 
 
+@login_required
 def track(request):
     context = {"teams": Team.objects.all(),
                "points": Point.objects.all(),
@@ -113,6 +117,7 @@ def track(request):
     return render(request, 'track.html', context)
 
 
+@login_required
 def team_page(request, team_id):
     team = get_object_or_404(Team, pk=team_id)
     jumps = Jump.objects.filter(team__pk=team_id)
@@ -120,11 +125,13 @@ def team_page(request, team_id):
                                          'jumps': jumps})
 
 
+@login_required
 def teams(request):
     teams_insts = Team.objects.all()
     return render(request, 'teams.html', {'teams': teams_insts})
 
 
+@login_required
 def athletes(request):
     athletes_insts = TeamMember.objects.all()
     return render(request, 'athletes.html', {'athletes': athletes_insts})
@@ -141,6 +148,7 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+@login_required
 def heatmap_transitions_data(_, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
@@ -155,6 +163,7 @@ def heatmap_transitions_data(_, team_external_id):
     return JsonResponse(data, safe=False)
 
 
+@login_required
 def heatmap_transitions_comparison_data(_, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     team_jumps = Jump.objects.filter(team=team)
@@ -184,12 +193,13 @@ def heatmap_transitions_comparison_data(_, team_external_id):
                 start, end = team_transition.split('-')
                 row_json = {'start': start,
                             'end': end,
-                            'duration': team_data[team_transition]-other_teams_data[team_transition]}
+                            'duration': team_data[team_transition] - other_teams_data[team_transition]}
                 data.append(row_json)
     data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
     return JsonResponse(data, safe=False)
 
 
+@login_required
 def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
@@ -199,5 +209,6 @@ def team_jumps(request, team_external_id):
                                          'transitions': transitions})
 
 
+@login_required
 def team_jump(request, team_id, jump_id):
     return HttpResponse(team_id + jump_id)

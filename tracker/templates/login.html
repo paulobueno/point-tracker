@@ -1,17 +1,86 @@
-{% extends 'main.html' %}
-{% block content %}
-<div class="container">
-    <form action="#" method="post">
+<!doctype html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="utf-8">
+    <title>FooTracker</title>
+    <script type="text/javascript" src="{% static '/js/bootstrap.js' %}"></script>
+    <link href="{% static '/css/bootstrap.css' %}" rel="stylesheet">
+    <link rel="icon"
+          href="{% static '/alien.png' %}">
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+
+      .bi {
+        vertical-align: -.125em;
+        fill: currentColor;
+      }
+
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+
+    .navbar-foo {background:rgba(30,230,30,1);}
+    .navbar-foo .navbar-brand {color: black;}
+    .navbar-foo .navbar-nav .nav-link {color: rgba(0,0,0,1);}
+
+
+
+
+    </style>
+</head>
+<body>
+<br>
+<div class="container col-xl-5">
+    <nav class="navbar-foo rounded-pill">
+        <div class="row">
+            <div class="col-4">
+                <img class="float-end" width="30" height="30"
+                     src="https://uploads-ssl.webflow.com/639bcb5db0b7734d255d6db9/639bee7d19d6f2ae30b3440d_2194593.png">
+            </div>
+            <div class="col-4">
+                <span class="h3 align-bottom">FooTracker</span>
+            </div>
+        </div>
+    </nav>
+    <form method="post">
         {% csrf_token %}
-        <div class="col-sm-4">
+        <div>
             <div>
                 <label class="form-label">Email</label>
             </div>
             <div class="col">
-                <input id="email-input" name="email-input" class="form-control" type="email">
+                <input id="email-input" name="email-input" class="form-control" type="text">
             </div>
         </div>
-        <div class="col-sm-4">
+        <div>
             <div>
                 <label class="form-label">Password</label>
             </div>
@@ -19,8 +88,9 @@
                 <input id="password-input" name="password-input" class="form-control" type="password">
             </div>
         </div>
-        <hr class="my-4 col-sm-4">
+        <hr>
         <input class="w-20 btn navbar-foo" type="submit" value="Submit">
     </form>
 </div>
-{% endblock %}
+</body>
+</html>
