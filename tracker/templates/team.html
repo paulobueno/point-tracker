@@ -6,6 +6,12 @@
 <div class="container">
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Team: {{team.name}}</p>
+            {% for member in members %}
+                {{member.name}} ({{member.nickname}}) - {{member.get_position_display}}<br>
+            {% endfor %}
+        </div>
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Jumps</p>
             <table class="table table-striped">
                 <thead>
@@ -28,13 +34,17 @@
                 </tbody>
             </table>
         </div>
+    </div>
+    <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Transitions Map (Avg Time)</p>
             <div id="my_dataviz"></div>
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Transitions Map - Comparing to Other Teams</p>
-            <div id="my_dataviz2"></div>
+            <div id="my_dataviz2">
+                <div class="alert alert-secondary" role="alert">Only on Paid Plan.</div>
+            </div>
         </div>
     </div>
 </div>

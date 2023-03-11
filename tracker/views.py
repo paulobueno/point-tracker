@@ -120,8 +120,9 @@ def track(request):
 def team_page(request, team_id):
     team = get_object_or_404(Team, pk=team_id)
     jumps = Jump.objects.filter(team__pk=team_id)
-    return render(request, 'team.html', {'team': team,
-                                         'jumps': jumps})
+    context = {'team': team,
+               'jumps': jumps}
+    return render(request, 'team.html', context)
 
 
 def teams(request):
@@ -201,7 +202,9 @@ def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps)
+    members = TeamMember.objects.filter(team__pk=team.id)
     return render(request, 'team.html', {'team': team,
+                                         'members': members,
                                          'jumps': jumps,
                                          'transitions': transitions})
 
