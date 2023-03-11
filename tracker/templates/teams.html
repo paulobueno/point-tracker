@@ -1,6 +1,6 @@
 {% extends 'main.html' %}
 {% block content %}
-<div class="container">
+<main class="container padding">
     <table class="table table-striped" id="table-results">
         <thead>
         <tr>
@@ -9,8 +9,6 @@
             <th scope="col">Foundation</th>
             <th scope="col">Country</th>
             <th scope="col">Instagram</th>
-            <th scope="col">Last Wind Tunnel Jump</th>
-            <th scope="col">Total Wind Tunnel Minutes</th>
             <th scope="col">Average Score</th>
         </tr>
         </thead>
@@ -23,11 +21,9 @@
             <td><i class="{{ team.country.flag_css }}"></i> {{team.country.name}}</td>
             <td>{{team.instagram}}</td>
             <td>0</td>
-            <td>0</td>
-            <td>0</td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
-</div>
+</main>
 {% endblock %}

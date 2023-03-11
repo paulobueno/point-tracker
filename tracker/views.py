@@ -117,7 +117,6 @@ def track(request):
     return render(request, 'track.html', context)
 
 
-@login_required
 def team_page(request, team_id):
     team = get_object_or_404(Team, pk=team_id)
     jumps = Jump.objects.filter(team__pk=team_id)
@@ -125,13 +124,13 @@ def team_page(request, team_id):
                                          'jumps': jumps})
 
 
-@login_required
 def teams(request):
     teams_insts = Team.objects.all()
+    for team in teams_insts:
+        print(team)
     return render(request, 'teams.html', {'teams': teams_insts})
 
 
-@login_required
 def athletes(request):
     athletes_insts = TeamMember.objects.all()
     return render(request, 'athletes.html', {'athletes': athletes_insts})
@@ -148,7 +147,6 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-@login_required
 def heatmap_transitions_data(_, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
@@ -199,7 +197,6 @@ def heatmap_transitions_comparison_data(_, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-@login_required
 def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
@@ -209,6 +206,5 @@ def team_jumps(request, team_external_id):
                                          'transitions': transitions})
 
 
-@login_required
 def team_jump(request, team_id, jump_id):
     return HttpResponse(team_id + jump_id)
