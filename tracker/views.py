@@ -149,15 +149,29 @@ def login_view(request):
 
 
 def heatmap_transitions_data(_, team_external_id):
+    randoms = [p[0] for p in Point.randoms]
+    all_transitions = dict([((_start, _end), dict((('duration_sum', 0), ('count', 0))))
+                            for _start in randoms for _end in randoms])
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
     for row in transitions.values():
-        row_json = {'start': str(row.get('point_1_id')),
-                    'end': str(row.get('point_2_id')),
-                    'duration': row.get('duration')}
-        data.append(row_json)
+        if row.get('point_1_id') in randoms and row.get('point_2_id') in randoms:
+            k = (str(row.get('point_1_id')), str(row.get('point_2_id')))
+            v = all_transitions.get(k)
+            all_transitions.update({k: {'duration_sum': v.get('duration_sum') + row.get('duration'),
+                                        'count': v.get('count') + 1}})
+        # row_json = {'start': str(row.get('point_1_id')),
+        #             'end': str(row.get('point_2_id')),
+        #             'duration': row.get('duration')}
+        # data.append(row_json)
+    for k in all_transitions.keys():
+        if all_transitions.get(k).get('count') > 0:
+            duration = all_transitions.get(k).get('duration_sum')/all_transitions.get(k).get('count')
+            data.append({'start': k[0],
+                         'end': k[1],
+                         'duration': round(duration, 2)})
     data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
     return JsonResponse(data, safe=False)
 

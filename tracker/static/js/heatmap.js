@@ -3,8 +3,8 @@ d3.json(jsonData).then(function(data) {
 console.log(jsonData);
 console.log(selectedId);
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
-      width = 650 - margin.left - margin.right,
-      height = 500 - margin.top - margin.bottom,
+      width = 450 - margin.left - margin.right,
+      height = 350 - margin.top - margin.bottom,
       svg = d3.select(selectedId)
               .append("svg")
                 .attr("width", width + margin.left + margin.right)
@@ -12,33 +12,48 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
               .append("g")
                 .attr("transform", `translate(${margin.left}, ${margin.top})`);
   // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
-  const points = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22']
+  const points = ['A','B','C','D','E','F','G','H','J','K','L','M','N','O','P','Q']
 
   // Build X scales and axis:
   const x = d3.scaleBand()
     .range([ 0, width ])
     .domain(points)
-    .padding(0.05);
+    .padding(0.02);
+  svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "middle")
+    .attr("x", width/2)
+    .attr("y", height + margin.bottom)
+    .text("TO")
   svg.append("g")
-    .style("font-size", 8)
+    .style("font-size", 12)
     .attr("transform", `translate(0, ${height})`)
     .call(d3.axisBottom(x).tickSize(0))
     .select(".domain").remove()
+
 
   // Build Y scales and axis:
   const y = d3.scaleBand()
     .range([ height, 0 ])
     .domain(points)
-    .padding(0.05);
+    .padding(0.02);
+  svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "middle")
+    .attr("x", -height/2)
+    .attr("y", -margin.left)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("FROM");
   svg.append("g")
-    .style("font-size", 8)
+    .style("font-size", 12)
     .call(d3.axisLeft(y).tickSize(0))
     .select(".domain").remove()
 
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateRdYlGn)
-    .domain([-2,0])
+    .domain([-2,-1])
 
   // create a tooltip
   const tooltip = d3.select(selectedId)
