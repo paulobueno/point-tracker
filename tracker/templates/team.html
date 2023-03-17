@@ -8,7 +8,7 @@
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Team: {{team.name}}</p>
             {% for member in members %}
-                {{member.name}} ({{member.nickname}}) - {{member.get_position_display}}<br>
+            {{member.name}} ({{member.nickname}}) - {{member.get_position_display}}<br>
             {% endfor %}
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
@@ -48,9 +48,23 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Block Transitions</p>
+            <p class="h6">Avg. time in seconds to complete a block.</p>
+            <div id="team_block_transitions"></div>
+        </div>
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Block Transitions - Comparing to Other Teams</p>
+            <div id="team_block_transitions_comparison">
+                <div class="alert alert-secondary" role="alert">Only on Paid Plan.</div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>const data_url = "{% url 'heatmap_transition' team.external_id %}"</script>
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>genHeatMap("{% url 'heatmap_transition' team.external_id %}","#my_dataviz")</script>
 <script>genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}","#my_dataviz2")</script>
+<script>barChart("{% url 'block_transition' team.external_id %}","#team_block_transitions")</script>
 {% endblock %}

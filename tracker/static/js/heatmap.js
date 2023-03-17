@@ -1,9 +1,62 @@
+function barChart(jsonData, selectedId) {
+    d3.json(jsonData).then(function(data) {
+        const margin = {top: 35, right: 35, bottom: 35, left: 35},
+              width = 600 - margin.left - margin.right,
+              height = 350 - margin.top - margin.bottom,
+              svg = d3.select(selectedId)
+                      .append("svg")
+                      .attr("width", width + margin.left + margin.right)
+                      .attr("height", height + margin.top + margin.bottom)
+                      .append("g")
+                      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+        const yScale = d3.scaleLinear()
+                         .range([height, 0])
+                         .domain([0, 4]);
+        const xScale = d3.scaleBand()
+                         .range([0, width])
+                         .domain(data.map((d) => d.start))
+                         .padding(0.1);
+        svg.append('g')
+           .call(d3.axisLeft(yScale));
+        svg.append('g')
+           .attr('transform', `translate(0, ${height})`)
+           .call(d3.axisBottom(xScale));
+        svg.append('g')
+           .attr('class', 'grid')
+           .attr('opacity', 0.5)
+           .call(d3.axisLeft()
+                   .scale(yScale)
+                   .tickSize(-width, 0, 0)
+                   .tickFormat(''));
+        svg.selectAll()
+           .data(data)
+           .enter()
+           .append('rect')
+           .style('fill', 'green')
+           .attr('x', (s) => xScale(s.start))
+           .attr('y', (s) => yScale(s.duration))
+           .attr('height', (s) => height - yScale(s.duration))
+           .attr('width', xScale.bandwidth());
+        svg.selectAll()
+           .data(data)
+           .enter()
+           .append('text')
+           .style("font-size", 12)
+           .attr('class', 'divergence')
+           .attr('x', (a) => xScale(a.start) + xScale.bandwidth() / 2)
+           .attr('y', (a) => yScale(a.duration) + 30)
+           .attr('fill', 'white')
+           .attr('text-anchor', 'middle')
+           .text((a) => a.duration);
+
+
+    })
+}
+
 function genHeatMap(jsonData, selectedId) {
 d3.json(jsonData).then(function(data) {
-console.log(jsonData);
-console.log(selectedId);
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
-      width = 450 - margin.left - margin.right,
+      width = 550 - margin.left - margin.right,
       height = 350 - margin.top - margin.bottom,
       svg = d3.select(selectedId)
               .append("svg")
@@ -53,7 +106,7 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateRdYlGn)
-    .domain([-2,-1])
+    .domain([-1.5,-0.5])
 
   // create a tooltip
   const tooltip = d3.select(selectedId)
