@@ -1,3 +1,4 @@
+import operator
 import uuid
 from statistics import mean
 
@@ -105,8 +106,6 @@ def track(request):
         with transaction.atomic():
             for i, point_2 in enumerate(jump_points_analytics[1:]):
                 point_1 = jump_points_analytics[i]
-                print("point 1", point_1)
-                print("point 2", point_2)
                 Transition(
                     jump=jump,
                     point_1=Point.objects.get(external_id=uuid.UUID(point_1[1])),
@@ -119,21 +118,19 @@ def track(request):
 
 def team_page(request, team_id):
     team = get_object_or_404(Team, pk=team_id)
-    jumps = Jump.objects.filter(team__pk=team_id)
+    jumps = Jump.objects.filter(team__pk=team_id).order_by('date')
     context = {'team': team,
                'jumps': jumps}
     return render(request, 'team.html', context)
 
 
 def teams(request):
-    teams_insts = Team.objects.all()
-    for team in teams_insts:
-        print(team)
+    teams_insts = Team.objects.all().order_by('name')
     return render(request, 'teams.html', {'teams': teams_insts})
 
 
 def athletes(request):
-    athletes_insts = TeamMember.objects.all()
+    athletes_insts = TeamMember.objects.all().order_by('team', 'name')
     return render(request, 'athletes.html', {'athletes': athletes_insts})
 
 

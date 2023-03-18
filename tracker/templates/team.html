@@ -12,11 +12,17 @@
             {% endfor %}
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Filters</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Jumps</p>
             <table class="table table-striped">
                 <thead>
                 <tr>
                     <th scope="col">Date</th>
+                    <th scope="col">Tag</th>
                     <th scope="col">Pool</th>
                     <th scope="col">Points</th>
                     <th scope="col">Busts</th>
@@ -26,6 +32,7 @@
                 {% for jump in jumps %}
                 <tr>
                     <td>{{jump.date|date:"Y-m-d"}}</td>
+                    <td>{% for tags in jump.jump_tags.all %} {{tags}} {% endfor %}</td>
                     <td>{{jump.pool}}</td>
                     <td>{{jump.points}}</td>
                     <td>{{jump.busts}}</td>

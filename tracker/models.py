@@ -78,8 +78,17 @@ def add_pool_id(sender, instance, *args, **kwargs):
     instance.pool_id = pool_id
 
 
+class Jump_Tags(models.Model):
+    external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    label = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.label)
+
+
 class Jump(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    jump_tags = models.ManyToManyField(Jump_Tags)
     team_members = models.ManyToManyField(TeamMember)
     pool = models.ForeignKey(Pool, on_delete=models.CASCADE)
     video = models.URLField(null=True, blank=True)
@@ -102,9 +111,9 @@ class Jump(models.Model):
 
 @receiver(pre_save, sender=Jump)
 def add_repetition_number(sender, instance, *args, **kwargs):
-    jumps = Jump.objects.filter(team=instance.team)\
-                        .filter(pool=instance.pool)\
-                        .filter(date=instance.date)
+    jumps = Jump.objects.filter(team=instance.team) \
+        .filter(pool=instance.pool) \
+        .filter(date=instance.date)
     instance.repetition_number = len(jumps) + 1
 
 
