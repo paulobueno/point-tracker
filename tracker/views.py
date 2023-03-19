@@ -238,7 +238,7 @@ def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     members = TeamMember.objects.filter(team__pk=team.id)
-    available_tags = Jump_Tags.objects.filter(jump__in=jumps)
+    available_tags = Jump_Tags.objects.filter(jump__in=jumps).distinct()
     tag_filter = None
     if request.method == "POST":
         tag_filter = request.POST.get('tag_filter')
