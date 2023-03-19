@@ -152,7 +152,7 @@ def heatmap_transitions_data(request, team_external_id):
                             for _start in randoms for _end in randoms])
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
-    if tag_filter:
+    if tag_filter not in ['', None, 'None']:
         jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
@@ -178,7 +178,7 @@ def block_transitions_data(request, team_external_id):
     all_transitions = dict([((block, block), dict((('duration_sum', 0), ('count', 0)))) for block in blocks])
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
-    if tag_filter:
+    if tag_filter not in ['', None, 'None']:
         jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
