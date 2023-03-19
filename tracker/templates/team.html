@@ -72,6 +72,6 @@
 <script>const data_url = "{% url 'heatmap_transition' team.external_id %}"</script>
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>genHeatMap("{% url 'heatmap_transition' team.external_id %}","#my_dataviz")</script>
-<script>genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}","#my_dataviz2")</script>
+<!--<script>genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}","#my_dataviz2")</script>-->
 <script>barChart("{% url 'block_transition' team.external_id %}","#team_block_transitions")</script>
 {% endblock %}
