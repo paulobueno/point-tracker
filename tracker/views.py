@@ -7,7 +7,7 @@ from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from tracker.forms import TeamRegister, AthleteRegister
-from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition
+from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
 from django.contrib.auth import authenticate, login
 
 
@@ -145,12 +145,15 @@ def login_view(request):
     return render(request, 'login.html')
 
 
-def heatmap_transitions_data(_, team_external_id):
+def heatmap_transitions_data(request, team_external_id):
+    tag_filter = request.GET.get('tag_filter')
     randoms = [p[0] for p in Point.randoms]
     all_transitions = dict([((_start, _end), dict((('duration_sum', 0), ('count', 0))))
                             for _start in randoms for _end in randoms])
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
+    if tag_filter:
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
     for row in transitions.values():
@@ -169,11 +172,14 @@ def heatmap_transitions_data(_, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def block_transitions_data(_, team_external_id):
+def block_transitions_data(request, team_external_id):
+    tag_filter = request.GET.get('tag_filter')
     blocks = [p[0] for p in Point.blocks]
     all_transitions = dict([((block, block), dict((('duration_sum', 0), ('count', 0)))) for block in blocks])
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
+    if tag_filter:
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
     for row in transitions.values():
@@ -231,12 +237,20 @@ def heatmap_transitions_comparison_data(_, team_external_id):
 def team_jumps(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
-    transitions = Transition.objects.filter(jump__in=jumps)
     members = TeamMember.objects.filter(team__pk=team.id)
+    available_tags = Jump_Tags.objects.filter(jump__in=jumps)
+    tag_filter = None
+    if request.method == "POST":
+        tag_filter = request.POST.get('tag_filter')
+        if tag_filter not in ['', None]:
+            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+    transitions = Transition.objects.filter(jump__in=jumps)
     return render(request, 'team.html', {'team': team,
                                          'members': members,
                                          'jumps': jumps,
-                                         'transitions': transitions})
+                                         'transitions': transitions,
+                                         'available_tags': available_tags,
+                                         'tag_filter': tag_filter})
 
 
 def team_jump(request, team_id, jump_id):
