@@ -19,7 +19,9 @@
                 <select class="form-select" name="tag_filter">
                     <option value="">---</option>
                     {% for tag in available_tags %}
-                    <option value="{{tag.external_id}}" {% if tag_filter == tag.external_id|stringformat:"s" %} selected {% endif %}>{{tag.label}}</option>
+                    <option value="{{tag.external_id}}"
+                            {% if tag_filter == tag.external_id|stringformat:"s" %} selected {% endif %}>{{tag.label}}
+                    </option>
                     {% endfor %}
                 </select>
                 <hr>
@@ -30,28 +32,31 @@
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Jumps</p>
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Tag</th>
-                    <th scope="col">Pool</th>
-                    <th scope="col">Points</th>
-                    <th scope="col">Busts</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for jump in jumps %}
-                <tr>
-                    <td>{{jump.date|date:"Y-m-d"}}</td>
-                    <td>{% for tags in jump.jump_tags.all %} {{tags}} {% endfor %}</td>
-                    <td>{{jump.pool}}</td>
-                    <td>{{jump.points}}</td>
-                    <td>{{jump.busts}}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            <div class="overflow-auto" style="max-height: 400px;">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Tag</th>
+                        <th scope="col">Pool</th>
+                        <th scope="col">Points</th>
+                        <th scope="col">Busts</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for jump in jumps %}
+                    <tr>
+                        <td>{{jump.date|date:"Y-m-d"}}</td>
+                        <td>{% for tags in jump.jump_tags.all %} {{tags}} {% endfor %}</td>
+                        <td>{{jump.pool}}</td>
+                        <td>{{jump.points}}</td>
+                        <td>{{jump.busts}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
     <div class="row">
@@ -85,5 +90,6 @@
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz")</script>
 <!--<script>genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}","#my_dataviz2")</script>-->
-<script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions")</script>
+<script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions")
+</script>
 {% endblock %}
