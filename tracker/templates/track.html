@@ -4,37 +4,60 @@
 <div class="container">
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Coach and Staff parameters:</p>
+            <form method="post" action="/track/select-team"> {% csrf_token %}
+                <div class="form-group m-2">
+                    <label>Team</label>
+                    <select class="form-select" style="max-width: 300px" name="team-select" id="team-select">
+                        <option value="">-</option>
+                        {% for team in teams %}
+                        <option value="{{team.external_id}}"
+                        {% if team.external_id == selected_team_uuid %}
+                        selected
+                        {% endif %}>{{team.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn mt-4 m-2" style="background-color: rgb(30,230,30);">Select</button>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Tracker</p>
             <form method="post"> {% csrf_token %}
+                <input type="hidden" id="team-selected" name="team-selected" value="{{selected_team_uuid}}">
                 <div class="row mb-3">
                     <div class="col">
                         <div class="form-group">
-                            <label>Team</label>
-                            <select class="form-select" name="team-select" id="team-select">
+                            <label>Tag</label>
+                            <select class="form-select" name="tag-select" id="tag-select">
                                 <option>-</option>
-                                {% for team in teams %}
-                                <option value="{{team.external_id}}">{{team.name}}</option>
+                                {% for tag in tags %}
+                                <option value="{{tag.external_id}}">{{tag.label}}</option>
                                 {% endfor %}
                             </select>
                         </div>
                     </div>
                     <div class="col">
                         <label>Date</label>
-                        <input name="jump-date" id="jump-date" type="date" class="form-control">
+                        <input name="jump-date" id="jump-date" type="date" class="form-control" required>
                     </div>
                 </div>
                 <div class="row mb-3">
                     {% for position in positions %}
-                        <div class="col">
-                            <div class="form-group">
-                                <label>{{position}}</label>
-                                <select class="form-select" name="athlete-select" id="athlete-select">
+                    <div class="col">
+                        <div class="form-group">
+                            <label>{{position}}</label>
+                            <select class="form-select" name="athlete-select" id="athlete-select">
                                 <option>-</option>
                                 {% for athlete in athletes %}
-                                <option value="{{athletes.external_id}}">{{athlete.nickname}}</option>
+                                <option value="{{athletes.external_id}}"
+                                {% if athlete.get_position_display == position %} selected {% endif %}>{{athlete.nickname}}</option>
                                 {% endfor %}
                             </select>
-                            </div>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
                 <div class="row mb-3">
@@ -53,7 +76,7 @@
                 <div class="row mb-3">
                     <div>
                         <i class="bi bi-youtube" style="font-size: 1.5rem; color: rgba(30,230,30,1);"></i>
-                    <label>Youtube URL</label>
+                        <label>Youtube URL</label>
                     </div>
                     <div class="col">
                         <input id="url-input" name="url-input" class="form-control" type="url" placeholder="https://">
@@ -63,12 +86,13 @@
                     <div class="col">
                         <div class="form-group">
                             <label>Points</label>
-                            <input id="total-points" name="total-points" type="number" class="form-control" placeholder="0">
+                            <input id="total-points" name="total-points" type="number" class="form-control"
+                                   placeholder="0">
                         </div>
                     </div>
                     <div class="col">
                         <label>Busts</label>
-                        <input  id="total-busts" name="total-busts" type="number" class="form-control" placeholder="0">
+                        <input id="total-busts" name="total-busts" type="number" class="form-control" placeholder="0">
                     </div>
                 </div>
                 <table class="table table-striped" id="table-results">
@@ -89,11 +113,8 @@
             </form>
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
-            <div class="row">
-                <label> Tracker</label>
-            </div>
             <div class="embed-responsive embed-responsive-16by9">
-                <iframe id = "video-iframe"
+                <iframe id="video-iframe"
                         class="embed-responsive-item" width="560" height="315"
                         src="https://www.youtube.com/embed/mcfjCjd3qFc"
                         frameborder="0"
@@ -104,9 +125,14 @@
             <div class="timerDisplay">
                 00 : 000
             </div>
-            <button id="start-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Start/Point (q)</button>
-            <button id="bust-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Bust (w)</button>
-            <button onclick="resetResults();" id="reset-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Reset</button>
+            <button id="start-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Start/Point
+                (q)
+            </button>
+            <button id="bust-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Bust (w)
+            </button>
+            <button onclick="resetResults();" id="reset-button" type="submit" class="btn"
+                    style="background-color: rgb(30,230,30);">Reset
+            </button>
         </div>
     </div>
 </div>

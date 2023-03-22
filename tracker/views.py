@@ -49,12 +49,21 @@ def team_register(request):
 
 @login_required
 def track(request):
+    selected_team_uuid = request.GET.get('selected_team_uuid')
+    try:
+        selected_team_uuid = uuid.UUID(str(selected_team_uuid))
+    except ValueError:
+        selected_team_uuid = None
     context = {"teams": Team.objects.all(),
                "points": Point.objects.all(),
+               "tags": Jump_Tags.objects.all(),
                "positions": sorted([position[1] for position in TeamMember.position.field.choices]),
-               "athletes": TeamMember.objects.all()}
+               "athletes": [],
+               "selected_team_uuid": selected_team_uuid}
+    if selected_team_uuid:
+        context.update({"athletes": TeamMember.objects.filter(team__external_id=selected_team_uuid)})
     if request.method == "POST":
-        team = request.POST.get('team-select')
+        tag = request.POST.get('tag-select')
         jump_date = request.POST.get('jump-date')
         url = request.POST.get('url-input')
         total_points = request.POST.get('total-points')
@@ -74,13 +83,15 @@ def track(request):
                     point_4=get_point(4),
                     point_5=get_point(5))
         pool.save()
-        jump = Jump(team=Team.objects.get(external_id=uuid.UUID(team)),
+        jump = Jump(team=Team.objects.get(external_id=selected_team_uuid),
                     date=jump_date,
                     video=url,
                     pool=pool,
                     points=total_points,
                     busts=total_busts)
         jump.save()
+        if tag != "-":
+            jump.jump_tags.add(Jump_Tags.objects.get(external_id=uuid.UUID(tag)))
 
         def change_to_bool(value):
             if value == "✔":
@@ -255,3 +266,10 @@ def team_jumps(request, team_external_id):
 
 def team_jump(request, team_id, jump_id):
     return HttpResponse(team_id + jump_id)
+
+
+def track_select_team(request):
+    selected_team_uuid = None
+    if request.method == 'POST':
+        selected_team_uuid = request.POST.get('team-select')
+    return redirect('/track?selected_team_uuid=' + selected_team_uuid)

@@ -10,6 +10,7 @@ urlpatterns = [
     path('athletes', views.athletes),
     path('', views.teams, name='index'),
     path('login', views.login_view, name='login'),
+    path('track/select-team', views.track_select_team),
     path('team/heatmap_transition/<uuid:team_external_id>',
          views.heatmap_transitions_data,
          name='heatmap_transition'),
