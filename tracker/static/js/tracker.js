@@ -1,29 +1,60 @@
 let blocks = Array.from({length: 22}, (_, i) => i + 1).map(num => num.toString());
+let warningShown;
 let [milliseconds,seconds] = [0,0];
-let timerRef = document.querySelector('.timerDisplay');
 let nIntervId;
+let nInterAfterTimeId;
 let currentTime = 0;
 let timeDiff = 0;
 let lastTime = 0;
 let pointAnalytics = [];
 let points = 0;
 let busts = 0;
+let jumpStarted;
+
+function displayTimer(){
+    let timerRef = document.querySelector('.timerDisplay');
+    milliseconds+=10;
+    if(milliseconds == 1000){
+        milliseconds = 0;
+        seconds++;
+    }
+    if(seconds >= 35 && !warningShown) {
+        warningShown = true;
+        addTimerWarning("35 SECONDS IS OVER.");
+        addTimerWarning("Not registering as valid points, but still recording times for analysis purposes.");
+    }
+     let s = seconds < 10 ? "0" + seconds : seconds;
+     let ms = milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds;
+     if(seconds < 35) {
+        timerRef.innerHTML = `${s} : ${ms}`;
+        } else {timerRef.innerHTML = '35 : 000';}
+}
+
+function addTimerWarning(text) {
+    const currentDiv = document.getElementById('timerInfos');
+    const newDiv = document.createElement("div");
+    const newContent = document.createTextNode(text);
+    newDiv.appendChild(newContent);
+    currentDiv.appendChild(newDiv);
+}
 
 function resetResults() {
-clearInterval(nIntervId);
-[milliseconds,seconds] = [0,0];
-timerRef = document.querySelector('.timerDisplay');
-nIntervId = null;
-currentTime = 0;
-timeDiff = 0;
-lastTime = 0;
-points = 0;
-busts = 0;
-timerRef.innerHTML = "00 : 000";
-updatePoints();
-const myNode = document.getElementById("table-results").getElementsByTagName('tbody')[0];
-myNode.innerHTML = "";
-pointAnalytics = [];
+    clearInterval(nIntervId);
+    warningShown = null;
+    nIntervId = null;
+    jumpStarted = null;
+    [milliseconds,seconds] = [0,0];
+    timerRef = document.querySelector('.timerDisplay');
+    currentTime = 0;
+    timeDiff = 0;
+    lastTime = 0;
+    points = 0;
+    busts = 0;
+    timerRef.innerHTML = "00 : 000";
+    updatePoints();
+    document.getElementById("table-results").getElementsByTagName('tbody')[0].innerHTML = "";
+    document.getElementById("timerInfos").innerHTML = '';
+    pointAnalytics = [];
 }
 
 function getVideoId(url) {
@@ -45,31 +76,41 @@ function updatePoints() {
     document.getElementById("total-busts").value = busts;
 }
 
-function startButton() {
+function initiateTimer() {
     if(!nIntervId) {nIntervId = setInterval(displayTimer,10);}
-    if(milliseconds > 0 && seconds < 35) {
-        var pool = getPoolPoints();
-        var currentPointFigure = pool[(pointAnalytics.length)%pool.length];
-        currentTime = seconds + (milliseconds/1000);
-        timeDiff = currentTime - lastTime;
-        lastTime = currentTime;
-        points++;
-        pointAnalytics.push({
-            "figure_uuid": currentPointFigure[0],
-            "figure_text": currentPointFigure[1],
-            "is_block": currentPointFigure[2],
-            "points": points,
-            "current_time": currentTime,
-            "time_diff": timeDiff,
-            "is_valid_point": true
-        });
-        if (pointAnalytics.length > 1
-            && pointAnalytics.at(-1)['figure_uuid'] == pointAnalytics.at(-2)['figure_uuid']
-            && !pointAnalytics.at(-2)['is_valid_point'])
-            {points--;}
-        registerPoint(pointAnalytics.length, currentTime, timeDiff, '✔');
-        updatePoints();
-    }
+}
+
+function isUnder35() {
+    if (seconds < 35) {return true;} else {return false;}
+}
+
+function startButton() {
+        initiateTimer();
+        if(jumpStarted) {
+            var pool = getPoolPoints();
+            var currentPointFigure = pool[(pointAnalytics.length)%pool.length];
+            currentTime = seconds + (milliseconds/1000);
+            timeDiff = currentTime - lastTime;
+            lastTime = currentTime;
+            points++;
+            pointAnalytics.push({
+                "figure_uuid": currentPointFigure[0],
+                "figure_text": currentPointFigure[1],
+                "is_block": currentPointFigure[2],
+                "points": points,
+                "current_time": currentTime,
+                "time_diff": timeDiff,
+                "is_valid_point": true
+            });
+            if (pointAnalytics.length > 1
+                && seconds < 35
+                && pointAnalytics.at(-1)['figure_uuid'] == pointAnalytics.at(-2)['figure_uuid']
+                && !pointAnalytics.at(-2)['is_valid_point'])
+                    {points--;}
+            registerPoint(pointAnalytics.length, currentTime, timeDiff, isUnder35() ? '✔' : '-');
+            if(seconds < 35) {updatePoints();}
+        }
+        jumpStarted = true;
 }
 
 document.getElementById('start-button').addEventListener('click', startButton);
@@ -102,21 +143,7 @@ function bustButton() {
 
 document.getElementById('bust-button').addEventListener('click', bustButton);
 
-function displayTimer(){
-    milliseconds+=10;
-    if(milliseconds == 1000){
-        milliseconds = 0;
-        seconds++;
-        if(seconds == 35){
-            clearInterval(nIntervId);
-        }
-    }
 
- let s = seconds < 10 ? "0" + seconds : seconds;
- let ms = milliseconds < 10 ? "00" + milliseconds : milliseconds < 100 ? "0" + milliseconds : milliseconds;
-
- timerRef.innerHTML = `${s} : ${ms}`;
-}
 
 function getPoolPoints() {
     const pool = [];

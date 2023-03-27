@@ -95,6 +95,8 @@
                         <input id="total-busts" name="total-busts" type="number" class="form-control" placeholder="0">
                     </div>
                 </div>
+                <button type="submit" class="btn m-2" style="background-color: rgb(30,230,30);">Save</button>
+                <div class="overflow-auto" style="max-height: 400px;">
                 <table class="table table-striped" id="table-results">
                     <thead>
                     <tr>
@@ -109,7 +111,7 @@
 
                     </tbody>
                 </table>
-                <button type="submit" class="btn" style="background-color: rgb(30,230,30);">Save</button>
+                </div>
             </form>
         </div>
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
@@ -122,8 +124,8 @@
                         allowfullscreen>
                 </iframe>
             </div>
-            <div class="timerDisplay">
-                00 : 000
+            <div class="row" id="timer">
+                <p class="float-left">Timer: <span class="timerDisplay">00 : 000</span></p>
             </div>
             <button id="start-button" type="submit" class="btn" style="background-color: rgb(30,230,30);">Start/Point
                 (q)
@@ -133,6 +135,7 @@
             <button onclick="resetResults();" id="reset-button" type="submit" class="btn"
                     style="background-color: rgb(30,230,30);">Reset
             </button>
+            <div class="row" id="timerInfos"></div>
         </div>
     </div>
 </div>
