@@ -1,4 +1,4 @@
-function barChart(jsonData, selectedId) {
+function barChart(jsonData, selectedId, yScaleDomain) {
     d3.json(jsonData).then(function(data) {
         const margin = {top: 35, right: 35, bottom: 35, left: 35},
               width = 600 - margin.left - margin.right,
@@ -11,7 +11,7 @@ function barChart(jsonData, selectedId) {
                       .attr("transform", `translate(${margin.left}, ${margin.top})`);
         const yScale = d3.scaleLinear()
                          .range([height, 0])
-                         .domain([0, 4]);
+                         .domain(yScaleDomain);
         const xScale = d3.scaleBand()
                          .range([0, width])
                          .domain(data.map((d) => d.start))
@@ -53,7 +53,7 @@ function barChart(jsonData, selectedId) {
     })
 }
 
-function genHeatMap(jsonData, selectedId) {
+function genHeatMap(jsonData, selectedId, colorsRange) {
 d3.json(jsonData).then(function(data) {
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
       width = 550 - margin.left - margin.right,
@@ -106,7 +106,7 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
   // Build color scale
   const myColor = d3.scaleSequential()
     .interpolator(d3.interpolateRdYlGn)
-    .domain([-1.5,-0.5])
+    .domain(colorsRange)
 
   // create a tooltip
   const tooltip = d3.select(selectedId)

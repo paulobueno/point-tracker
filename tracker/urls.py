@@ -20,7 +20,17 @@ urlpatterns = [
     path('team/heatmap_transition_comparison/<uuid:team_external_id>',
          views.heatmap_transitions_comparison_data,
          name='heatmap_transition_comparison'),
+    path('team/block_transition_comparison/<uuid:team_external_id>',
+         views.block_transitions_comparison_data,
+         name='block_transition_comparison'),
+    path('foo/heatmap_transition_comparison',
+         views.foo_heatmap_transitions_comparison_data,
+         name='foo_heatmap_transition_comparison'),
+    path('foo/block_transition_comparison',
+         views.foo_block_transitions_comparison_data,
+         name='foo_block_transition_comparison'),
     path('team/<uuid:team_external_id>', views.team_page),
     path('jumps/<uuid:team_external_id>', views.team_jumps, name='team_jumps'),
+    path('fooflyers', views.foo_jumps, name='fooflyers_jumps'),
     path('jump/<uuid:jump_external_id>', views.team_jump)
 ]

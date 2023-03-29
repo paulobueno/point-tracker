@@ -228,7 +228,22 @@ def heatmap_transitions_comparison_data(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def team_jumps(request, team_external_id):
+@login_required
+def block_transitions_comparison_data(request, team_external_id):
+    team_data = json.loads(block_transitions_data(request, team_external_id).content)
+    other_teams_data = json.loads(block_transitions_data(request, team_external_id, exclude_team=True).content)
+    data = []
+    for t in team_data:
+        for ot in other_teams_data:
+            if t['start'] == ot['start'] and t['end'] == ot['end']:
+                duration = round(float(t['duration']) - float(ot['duration']), 2)
+                data.append({'start': t['start'],
+                             'end': t['end'],
+                             'duration': duration})
+    return JsonResponse(data, safe=False)
+
+
+def team_jumps(request, team_external_id, fooflyers=False):
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     members = TeamMember.objects.filter(team__pk=team.id)
@@ -244,7 +259,13 @@ def team_jumps(request, team_external_id):
                                          'jumps': jumps,
                                          'transitions': transitions,
                                          'available_tags': available_tags,
-                                         'tag_filter': tag_filter})
+                                         'tag_filter': tag_filter,
+                                         'fooflyers': fooflyers})
+
+
+def foo_jumps(request):
+    team_uuid = uuid.UUID("497c2597-4dbb-4cb7-b92d-27cd641f6c9c")
+    return team_jumps(request, team_uuid, fooflyers=True)
 
 
 def team_jump(request, team_id, jump_id):
@@ -256,3 +277,37 @@ def track_select_team(request):
     if request.method == 'POST':
         selected_team_uuid = request.POST.get('team-select')
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
+
+
+def foo_heatmap_transitions_comparison_data(request):
+    team_data = json.loads(heatmap_transitions_data(request,
+                                                    uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c')).content)
+    other_teams_data = json.loads(heatmap_transitions_data(request,
+                                                           uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'),
+                                                           exclude_team=True).content)
+    data = []
+    for t in team_data:
+        for ot in other_teams_data:
+            if t['start'] == ot['start'] and t['end'] == ot['end']:
+                duration = round(float(t['duration']) - float(ot['duration']), 2)
+                data.append({'start': t['start'],
+                             'end': t['end'],
+                             'duration': duration})
+    return JsonResponse(data, safe=False)
+
+
+def foo_block_transitions_comparison_data(request):
+    team_data = json.loads(block_transitions_data(request,
+                                                  uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c')).content)
+    other_teams_data = json.loads(block_transitions_data(request,
+                                                         uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'),
+                                                         exclude_team=True).content)
+    data = []
+    for t in team_data:
+        for ot in other_teams_data:
+            if t['start'] == ot['start'] and t['end'] == ot['end']:
+                duration = round(float(t['duration']) - float(ot['duration']), 2)
+                data.append({'start': t['start'],
+                             'end': t['end'],
+                             'duration': duration})
+    return JsonResponse(data, safe=False)

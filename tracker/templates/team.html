@@ -68,7 +68,12 @@
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Transitions Map - Comparing to Other Teams</p>
             <div id="my_dataviz2">
-                <div class="alert alert-secondary" role="alert">Only on Paid Plan.</div>
+                {% if not fooflyers %}
+                    <div class="alert alert-secondary" role="alert">
+                        Only on Paid Plan.<br>
+                        <a href="/fooflyers">Click here to preview.</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -81,15 +86,21 @@
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Block Transitions - Comparing to Other Teams</p>
             <div id="team_block_transitions_comparison">
-                <div class="alert alert-secondary" role="alert">Only on Paid Plan.</div>
+                {% if not fooflyers  %}
+                    <div class="alert alert-secondary" role="alert">
+                        Only on Paid Plan.<br>
+                        <a href="/fooflyers">Click here to preview.</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-<!--<script>const data_url = "{% url 'heatmap_transition' team.external_id %}"</script>-->
 <script src="{% static '/js/heatmap.js' %}"></script>
-<script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz")</script>
-<!--<script>genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}","#my_dataviz2")</script>-->
-<script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions")
-</script>
+<script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz",[-2,-0.5])</script>
+<script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions", [0,5])</script>
+{% if fooflyers %}
+    <script>genHeatMap("{% url 'foo_heatmap_transition_comparison' %}?tag_filter={{tag_filter}}","#my_dataviz2",[-0.3,0.3])</script>
+    <script>barChart("{% url 'foo_block_transition_comparison' %}?tag_filter={{tag_filter}}","#team_block_transitions_comparison", [-1,2])</script>
+{% endif %}
 {% endblock %}
