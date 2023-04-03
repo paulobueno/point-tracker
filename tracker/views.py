@@ -1,11 +1,14 @@
 import operator
 import uuid
-from statistics import mean
+from collections import defaultdict
 import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
+from django.template.defaultfilters import upper
+import numpy as np
+
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
 from django.contrib.auth import authenticate, login
@@ -277,6 +280,22 @@ def track_select_team(request):
     if request.method == 'POST':
         selected_team_uuid = request.POST.get('team-select')
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
+
+
+def transition_trend_data(_, team_eid, point1, point2):
+    team = Team.objects.get(external_id=team_eid)
+    jumps = Jump.objects.filter(team=team)
+    transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
+    data = defaultdict(list)
+    for transition in transitions:
+        date = str(transition.jump.date)
+        duration = float(transition.duration)
+        data[date].append(duration)
+    for k, v in data.items():
+        data.update({k: {'mean': round(np.quantile(v, 0.5), 2),
+                         'q1': round(np.quantile(v, 0.25), 2),
+                         'q3': round(np.quantile(v, 0.75), 2)}})
+    return JsonResponse(data, safe=False)
 
 
 def foo_heatmap_transitions_comparison_data(request):
