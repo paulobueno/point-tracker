@@ -114,7 +114,8 @@ def add_repetition_number(sender, instance, *args, **kwargs):
     jumps = Jump.objects.filter(team=instance.team) \
         .filter(pool=instance.pool) \
         .filter(date=instance.date)
-    instance.repetition_number = len(jumps) + 1
+    if not instance.repetition_number:
+        instance.repetition_number = len(jumps) + 1
 
 
 class JumpAnalytic(models.Model):

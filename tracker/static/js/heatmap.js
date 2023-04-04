@@ -159,3 +159,69 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
     .on("mouseleave", mouseleave)
 })
 }
+
+function genBlockTrend(jsonData, selectedId) {
+d3.json(jsonData).then(function(data) {
+const margin = {top: 35, right: 35, bottom: 35, left: 35},
+      width = 550 - margin.left - margin.right,
+      height = 350 - margin.top - margin.bottom,
+      svg = d3.select(selectedId)
+              .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+              .append("g")
+                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+    // Convert date strings to Date objects
+    const parseTime = d3.timeParse('%Y-%m-%d');
+    const dates = Object.keys(data).map(parseTime);
+
+    // Extract data for each line
+    const means = Object.values(data).map(d => d.mean);
+    const q1s = Object.values(data).map(d => d.q1);
+    const q3s = Object.values(data).map(d => d.q3);
+
+    // Set up scales and line generator
+    const xScale = d3.scaleTime()
+      .domain(d3.extent(dates))
+      .range([0, 400]);
+
+    const yScale = d3.scaleLinear()
+      .domain([d3.min([d3.min(means), d3.min(q1s), d3.min(q3s)]), d3.max([d3.max(means), d3.max(q1s), d3.max(q3s)])])
+      .range([200, 0]);
+
+    const line = d3.line()
+      .x((d, i) => xScale(dates[i]))
+      .y(d => yScale(d));
+
+    // Create SVG element and append axes
+    svg.append('g')
+      .attr('transform', 'translate(0, 200)')
+      .call(d3.axisBottom(xScale));
+
+    svg.append('g')
+      .call(d3.axisLeft(yScale));
+
+    // Append paths for each line
+    svg.append('g')
+      .append('path')
+      .datum(means)
+      .attr('d', line)
+      .attr('stroke', 'blue')
+      .attr('fill', 'none');
+
+    svg.append('g')
+      .append('path')
+      .datum(q1s)
+      .attr('d', line)
+      .attr('stroke', 'green')
+      .attr('fill', 'none');
+
+    svg.append('g')
+      .append('path')
+      .datum(q3s)
+      .attr('d', line)
+      .attr('stroke', 'red')
+      .attr('fill', 'none');
+
+})}

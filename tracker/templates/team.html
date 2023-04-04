@@ -95,6 +95,27 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Time Trend</p>
+            <p class="h6">Time spent on transitions by day.</p>
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="d-flex align-items-center">
+                        <div class="m-1">Select a block: </div>
+                        <select class="form-select form-select-sm m-1 w-25" name="block_filter">
+                            {% for block in blocks %}
+                            <option value="{{block}}" {% if block == block_filter %}selected{% endif %} >{{block}}</option>
+                            {% endfor %}
+                        </select>
+
+                    <input class="w-20 btn navbar-foo ml-1" type="submit" value="Submit">
+
+                </div>
+            </form>
+            <div id="time_trend"></div>
+        </div>
+    </div>
 </div>
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz",[-2,-0.5])</script>
@@ -102,5 +123,6 @@
 {% if fooflyers %}
     <script>genHeatMap("{% url 'foo_heatmap_transition_comparison' %}?tag_filter={{tag_filter}}","#my_dataviz2",[-0.3,0.3])</script>
     <script>barChart("{% url 'foo_block_transition_comparison' %}?tag_filter={{tag_filter}}","#team_block_transitions_comparison", [-1,2])</script>
+    <script>genBlockTrend("{% url 'foo_transition_trend_data' block_filter block_filter %}","#time_trend")</script>
 {% endif %}
 {% endblock %}

@@ -4,7 +4,8 @@ from collections import defaultdict
 import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponse, JsonResponse
+from django.urls import reverse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.defaultfilters import upper
 import numpy as np
@@ -251,18 +252,29 @@ def team_jumps(request, team_external_id, fooflyers=False):
     jumps = Jump.objects.filter(team=team)
     members = TeamMember.objects.filter(team__pk=team.id)
     available_tags = Jump_Tags.objects.filter(jump__in=jumps).distinct()
-    tag_filter = None
+    blocks = [p[0] for p in Point.blocks]
+    tag_filter = request.GET.get('tag_filter', '')
+    block_filter = request.GET.get('block_filter', '1')
     if request.method == "POST":
-        tag_filter = request.POST.get('tag_filter')
-        if tag_filter not in ['', None]:
-            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+        block_filter = request.POST.get('block_filter', block_filter)
+        tag_filter = request.POST.get('tag_filter', tag_filter)
+        if fooflyers:
+            url = reverse('fooflyers_jumps')
+        else:
+            url = reverse('team_jumps', kwargs={'team_external_id': team_external_id})
+        url = f'{url}?block_filter={block_filter}&tag_filter={tag_filter}'
+        return HttpResponseRedirect(url)
+    if tag_filter not in ['', None]:
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps)
     return render(request, 'team.html', {'team': team,
+                                         'blocks': blocks,
                                          'members': members,
                                          'jumps': jumps,
                                          'transitions': transitions,
                                          'available_tags': available_tags,
                                          'tag_filter': tag_filter,
+                                         'block_filter': block_filter,
                                          'fooflyers': fooflyers})
 
 
@@ -282,8 +294,25 @@ def track_select_team(request):
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
 
 
+@login_required
 def transition_trend_data(_, team_eid, point1, point2):
     team = Team.objects.get(external_id=team_eid)
+    jumps = Jump.objects.filter(team=team)
+    transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
+    data = defaultdict(list)
+    for transition in transitions:
+        date = str(transition.jump.date)
+        duration = float(transition.duration)
+        data[date].append(duration)
+    for k, v in data.items():
+        data.update({k: {'mean': round(np.quantile(v, 0.5), 2),
+                         'q1': round(np.quantile(v, 0.25), 2),
+                         'q3': round(np.quantile(v, 0.75), 2)}})
+    return JsonResponse(data, safe=False)
+
+
+def foo_transition_trend_data(_, point1, point2):
+    team = Team.objects.get(external_id=uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'))
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
     data = defaultdict(list)
