@@ -1,3 +1,15 @@
+function getTrendByBlock(block) {
+    d3.json(BlockTrendUrl).then(function(data) {
+    genBlockTrend(data[block],'#time_trend');
+    });
+}
+
+function toggle(el){
+    var value = el.options[el.selectedIndex].value;
+    getTrendByBlock(value);
+}
+
+
 function barChart(jsonData, selectedId, yScaleDomain) {
     d3.json(jsonData).then(function(data) {
         const margin = {top: 35, right: 35, bottom: 35, left: 35},
@@ -160,68 +172,74 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
 })
 }
 
-function genBlockTrend(jsonData, selectedId) {
-d3.json(jsonData).then(function(data) {
-const margin = {top: 35, right: 35, bottom: 35, left: 35},
-      width = 550 - margin.left - margin.right,
-      height = 350 - margin.top - margin.bottom,
-      svg = d3.select(selectedId)
-              .append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-              .append("g")
-                .attr("transform", `translate(${margin.left}, ${margin.top})`);
+function genBlockTrend(data, selectedId) {
+    d3.select(selectedId).selectAll("*").remove();
+    var margin = {top: 35, right: 35, bottom: 35, left: 35},
+            width = 1000 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom,
+            svg = d3.select(selectedId)
+                    .append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+            x = d3.scaleTime().range([0, width]),
+            y = d3.scaleLinear().range([height, 0]),
+            parseDate = d3.utcParse("%Y-%m-%d"),
+            formatDate = d3.timeFormat("%d-%m"),
+            lineMean = d3.line()
+                         .x(function(d) { return x(d.date); })
+                         .y(function(d) { return y(d.mean); }),
+            lineQ1 = d3.line()
+                       .x(function(d) { return x(d.date); })
+                       .y(function(d) { return y(d.q1); }),
+            lineQ3 = d3.line()
+                       .x(function(d) { return x(d.date); })
+                       .y(function(d) { return y(d.q3); });
 
-    // Convert date strings to Date objects
-    const parseTime = d3.timeParse('%Y-%m-%d');
-    const dates = Object.keys(data).map(parseTime);
 
-    // Extract data for each line
-    const means = Object.values(data).map(d => d.mean);
-    const q1s = Object.values(data).map(d => d.q1);
-    const q3s = Object.values(data).map(d => d.q3);
 
-    // Set up scales and line generator
-    const xScale = d3.scaleTime()
-      .domain(d3.extent(dates))
-      .range([0, 400]);
+        data.forEach(function(d) {
+        d.date = parseDate(d.date);
+        d.mean = +d.mean;
+        d.q1 = +d.q1;
+        d.q3 = +d.q3;
+        });
 
-    const yScale = d3.scaleLinear()
-      .domain([d3.min([d3.min(means), d3.min(q1s), d3.min(q3s)]), d3.max([d3.max(means), d3.max(q1s), d3.max(q3s)])])
-      .range([200, 0]);
 
-    const line = d3.line()
-      .x((d, i) => xScale(dates[i]))
-      .y(d => yScale(d));
 
-    // Create SVG element and append axes
-    svg.append('g')
-      .attr('transform', 'translate(0, 200)')
-      .call(d3.axisBottom(xScale));
+        // Scale the range of the data
+        x.domain(d3.extent(data, function(d) {  return d.date; }));
+        y.domain([d3.min(data, function(d) {  return d.q1; })-0.5, d3.max(data, function(d) {  return d.q3; })]);
 
-    svg.append('g')
-      .call(d3.axisLeft(yScale));
+        // Add the x axis
+        svg.append("g")
+           .attr("class", "x axis")
+           .attr("transform", "translate(0," + height + ")")
+           .call(d3.axisBottom(x).ticks(d3.timeWeek.every(2)));
 
-    // Append paths for each line
-    svg.append('g')
-      .append('path')
-      .datum(means)
-      .attr('d', line)
-      .attr('stroke', 'blue')
-      .attr('fill', 'none');
+        // Add the y axis
+        svg.append("g")
+           .attr("class", "y axis")
+           .call(d3.axisLeft(y));
 
-    svg.append('g')
-      .append('path')
-      .datum(q1s)
-      .attr('d', line)
-      .attr('stroke', 'green')
-      .attr('fill', 'none');
-
-    svg.append('g')
-      .append('path')
-      .datum(q3s)
-      .attr('d', line)
-      .attr('stroke', 'red')
-      .attr('fill', 'none');
-
-})}
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .style("stroke-dasharray", ("3, 3"))
+           .attr("stroke-width", 1)
+           .attr("d", lineQ3);
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .style("stroke-dasharray", ("3, 3"))
+           .attr("stroke-width", 1)
+           .attr("d", lineQ1);
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .attr("stroke-width", 1.5)
+           .attr("d", lineMean);}

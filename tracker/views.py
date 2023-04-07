@@ -4,6 +4,7 @@ from collections import defaultdict
 import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import F
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
@@ -300,15 +301,17 @@ def transition_trend_data(_, team_eid, point1, point2):
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
     data = defaultdict(list)
+    output_data = []
     for transition in transitions:
         date = str(transition.jump.date)
         duration = float(transition.duration)
         data[date].append(duration)
     for k, v in data.items():
-        data.update({k: {'mean': round(np.quantile(v, 0.5), 2),
-                         'q1': round(np.quantile(v, 0.25), 2),
-                         'q3': round(np.quantile(v, 0.75), 2)}})
-    return JsonResponse(data, safe=False)
+        output_data.append({'date': k,
+                            'mean': round(np.quantile(v, 0.5), 2),
+                            'q1': round(np.quantile(v, 0.25), 2),
+                            'q3': round(np.quantile(v, 0.75), 2)})
+    return JsonResponse(output_data, safe=False)
 
 
 def foo_transition_trend_data(_, point1, point2):
@@ -316,14 +319,25 @@ def foo_transition_trend_data(_, point1, point2):
     jumps = Jump.objects.filter(team=team)
     transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
     data = defaultdict(list)
+    output_data = []
     for transition in transitions:
         date = str(transition.jump.date)
         duration = float(transition.duration)
         data[date].append(duration)
     for k, v in data.items():
-        data.update({k: {'mean': round(np.quantile(v, 0.5), 2),
-                         'q1': round(np.quantile(v, 0.25), 2),
-                         'q3': round(np.quantile(v, 0.75), 2)}})
+        output_data.append({'date': k,
+                            'mean': round(np.quantile(v, 0.5), 2),
+                            'q1': round(np.quantile(v, 0.25), 2),
+                            'q3': round(np.quantile(v, 0.75), 2)})
+    output_data.sort(key=lambda x: x['date'])
+    return JsonResponse(output_data, safe=False)
+
+
+def foo_transition_trend_data_all(_):
+    blocks = [p[0] for p in Point.blocks]
+    data = {}
+    for block in blocks:
+        data[block] = json.loads(foo_transition_trend_data(None, block, block).content)
     return JsonResponse(data, safe=False)
 
 
