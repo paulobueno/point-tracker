@@ -1,13 +1,26 @@
-function getTrendByBlock(block) {
-    d3.json(BlockTrendUrl).then(function(data) {
-    genBlockTrend(data[block],'#time_trend');
-    });
-}
+let apiResult;
 
 function toggle(el){
     var value = el.options[el.selectedIndex].value;
-    getTrendByBlock(value);
+    genBlockTrend(apiResult[value],'#time_trend');
 }
+
+async function fetchApiData() {
+          const response = await fetch(trendUrl);
+          const data = await response.json();
+          apiResult = data;
+        };
+
+async function useApiResult() {
+  await fetchApiData();
+  genBlockTrend(apiResult["1"],'#time_trend');
+}
+
+window.addEventListener('load', function() {
+    fetchApiData();
+    useApiResult();
+});
+
 
 
 function barChart(jsonData, selectedId, yScaleDomain) {
@@ -68,7 +81,7 @@ function barChart(jsonData, selectedId, yScaleDomain) {
 function genHeatMap(jsonData, selectedId, colorsRange) {
 d3.json(jsonData).then(function(data) {
 const margin = {top: 35, right: 35, bottom: 35, left: 35},
-      width = 550 - margin.left - margin.right,
+      width = 600 - margin.left - margin.right,
       height = 350 - margin.top - margin.bottom,
       svg = d3.select(selectedId)
               .append("svg")
@@ -172,41 +185,44 @@ const margin = {top: 35, right: 35, bottom: 35, left: 35},
 })
 }
 
-function genBlockTrend(data, selectedId) {
+function genBlockTrend(originalData, selectedId) {
     d3.select(selectedId).selectAll("*").remove();
-    var margin = {top: 35, right: 35, bottom: 35, left: 35},
-            width = 1000 - margin.left - margin.right,
-            height = 400 - margin.top - margin.bottom,
-            svg = d3.select(selectedId)
-                    .append("svg")
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
-            x = d3.scaleTime().range([0, width]),
-            y = d3.scaleLinear().range([height, 0]),
-            parseDate = d3.utcParse("%Y-%m-%d"),
-            formatDate = d3.timeFormat("%d-%m"),
-            lineMean = d3.line()
-                         .x(function(d) { return x(d.date); })
-                         .y(function(d) { return y(d.mean); }),
-            lineQ1 = d3.line()
-                       .x(function(d) { return x(d.date); })
-                       .y(function(d) { return y(d.q1); }),
-            lineQ3 = d3.line()
-                       .x(function(d) { return x(d.date); })
-                       .y(function(d) { return y(d.q3); });
+    var data = [],
+        margin = {top: 35, right: 35, bottom: 35, left: 35},
+        width = 700 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom,
+        svg = d3.select(selectedId)
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+        x = d3.scaleTime().range([0, width]),
+        y = d3.scaleLinear().range([height, 0]),
+        parseDate = d3.utcParse("%Y-%m-%d"),
+        formatDate = d3.timeFormat("%d-%m"),
+        lineMean = d3.line()
+                     .x(function(d) { return x(d.date); })
+                     .y(function(d) { return y(d.mean); }),
+        lineQ1 = d3.line()
+                   .x(function(d) { return x(d.date); })
+                   .y(function(d) { return y(d.q1); }),
+        lineQ3 = d3.line()
+                   .x(function(d) { return x(d.date); })
+                   .y(function(d) { return y(d.q3); });
 
 
+          originalData.forEach(function(d) {
+            // Create a new object with the transformed fields
+            var cleanedDatum = {
+              date: parseDate(d.date),
+              mean: +d.mean,
+              q1: +d.q1,
+              q3: +d.q3
+            };
 
-        data.forEach(function(d) {
-        d.date = parseDate(d.date);
-        d.mean = +d.mean;
-        d.q1 = +d.q1;
-        d.q3 = +d.q3;
-        });
-
-
+            data.push(cleanedDatum);
+          });
 
         // Scale the range of the data
         x.domain(d3.extent(data, function(d) {  return d.date; }));
