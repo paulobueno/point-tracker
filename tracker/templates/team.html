@@ -101,13 +101,13 @@
             <p class="h6">Time spent on transitions by day.</p>
                 <div class="d-flex align-items-center">
                         <div class="m-1">Select a block: </div>
-                        <select style="width: 5% !important;" class="form-select form-select-sm m-1" name="block_filter" id="block_filter" onchange="toggle(this)">
+                        <select style="width: 10% !important;" class="form-select form-select-sm m-1" name="block_filter" id="block_filter" onchange="toggle(this)">
                             {% for block in blocks %}
                             <option value="{{block}}" {% if block == block_filter %}selected{% endif %} >{{block}}</option>
                             {% endfor %}
                         </select>
                 </div>
-            <div id="time_trend">
+            <div id="time_trend" class="align-items-center">
                 {% if not fooflyers  %}
                     <br>
                     <div class="alert alert-secondary" role="alert">
@@ -124,10 +124,9 @@
 <script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions", [0,5])</script>
 {% if fooflyers %}
     <script>
-        const BlockTrendUrl = "{% url 'foo_transition_trend_all_data' %}";
+        var trendUrl = "{% url 'foo_transition_trend_all_data' %}"
         genHeatMap("{% url 'foo_heatmap_transition_comparison' %}?tag_filter={{tag_filter}}","#my_dataviz2",[-0.3,0.3]);
         barChart("{% url 'foo_block_transition_comparison' %}?tag_filter={{tag_filter}}","#team_block_transitions_comparison", [-1,2]);
-        getTrendByBlock("1");
     </script>
 {% endif %}
 {% endblock %}
