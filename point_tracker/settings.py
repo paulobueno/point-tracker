@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'tracker.apps.TrackerConfig',
-    'django_countries'
+    'django_countries',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -129,3 +130,5 @@ else:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = ['https://*.footracker.xyz']
+
+AUTH_USER_MODEL = 'users.User'
