@@ -2,26 +2,31 @@
 {% block content %}
 <br>
 <div class="container col-xl-5">
+
+
+
+
     <form method="post">
         {% csrf_token %}
         <div>
             <div>
-                <label class="form-label">Email</label>
+                <label class="form-label">{{ form.username.label_tag }}</label>
             </div>
             <div class="col">
-                <input id="email-input" name="email-input" class="form-control" type="text">
+                {{ form.username }}
             </div>
         </div>
         <div>
             <div>
-                <label class="form-label">Password</label>
+                <label class="form-label">{{ form.password.label_tag }}</label>
             </div>
             <div class="col">
-                <input id="password-input" name="password-input" class="form-control" type="password">
+                {{ form.password }}
             </div>
         </div>
         <hr>
         <input class="w-20 btn navbar-foo" type="submit" value="Submit">
+
     </form>
 </div>
 {% endblock %}

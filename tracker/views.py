@@ -1,10 +1,8 @@
-import operator
 import uuid
 from collections import defaultdict
 import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.db.models import F
 from django.urls import reverse
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
@@ -13,7 +11,6 @@ import numpy as np
 
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
-from django.contrib.auth import authenticate, login
 
 
 def index(request):
@@ -148,17 +145,6 @@ def teams(request):
 def athletes(request):
     athletes_insts = TeamMember.objects.all().order_by('team', 'name')
     return render(request, 'athletes.html', {'athletes': athletes_insts})
-
-
-def login_view(request):
-    if request.method == "POST":
-        email = request.POST['email-input']
-        password = request.POST['password-input']
-        user = authenticate(request, username=email, password=password)
-        if user is not None:
-            login(request, user)
-            return redirect(teams)
-    return render(request, 'login.html')
 
 
 def heatmap_transitions_data(request, team_external_id, exclude_team=False):
