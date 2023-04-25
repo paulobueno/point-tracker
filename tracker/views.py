@@ -204,7 +204,6 @@ def block_transitions_data(request, team_external_id, exclude_team=False):
     return JsonResponse(data, safe=False)
 
 
-@login_required
 def heatmap_transitions_comparison_data(request, team_external_id):
     team_data = json.loads(heatmap_transitions_data(request, team_external_id).content)
     other_teams_data = json.loads(heatmap_transitions_data(request, team_external_id, exclude_team=True).content)
@@ -219,7 +218,6 @@ def heatmap_transitions_comparison_data(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-@login_required
 def block_transitions_comparison_data(request, team_external_id):
     team_data = json.loads(block_transitions_data(request, team_external_id).content)
     other_teams_data = json.loads(block_transitions_data(request, team_external_id, exclude_team=True).content)
@@ -281,7 +279,6 @@ def track_select_team(request):
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
 
 
-@login_required
 def transition_trend_data(_, team_eid, point1, point2):
     team = Team.objects.get(external_id=team_eid)
     jumps = Jump.objects.filter(team=team)

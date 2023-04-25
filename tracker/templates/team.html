@@ -68,12 +68,6 @@
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Transitions Map - Comparing to Other Teams</p>
             <div id="my_dataviz2">
-                {% if not fooflyers %}
-                    <div class="alert alert-secondary" role="alert">
-                        Only on Paid Plan.<br>
-                        <a href="/fooflyers">Click here to preview.</a>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -86,12 +80,6 @@
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Block Transitions - Comparing to Other Teams</p>
             <div id="team_block_transitions_comparison">
-                {% if not fooflyers  %}
-                    <div class="alert alert-secondary" role="alert">
-                        Only on Paid Plan.<br>
-                        <a href="/fooflyers">Click here to preview.</a>
-                    </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -121,12 +109,14 @@
 </div>
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz",[-2,-0.5])</script>
-<script>barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions", [0,5])</script>
+<script>
+    barChart("{% url 'block_transition' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions", [0,5]);
+    genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}?tag_filter={{tag_filter}}","#my_dataviz2",[-0.3,0.3]);
+    barChart("{% url 'block_transition_comparison' team.external_id %}?tag_filter={{tag_filter}}","#team_block_transitions_comparison", [-1.5,2]);
+</script>
 {% if fooflyers %}
     <script>
         var trendUrl = "{% url 'foo_transition_trend_all_data' %}"
-        genHeatMap("{% url 'foo_heatmap_transition_comparison' %}?tag_filter={{tag_filter}}","#my_dataviz2",[-0.3,0.3]);
-        barChart("{% url 'foo_block_transition_comparison' %}?tag_filter={{tag_filter}}","#team_block_transitions_comparison", [-1,2]);
     </script>
 {% endif %}
 {% endblock %}
