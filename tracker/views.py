@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.defaultfilters import upper
 import numpy as np
-
+from django.db.models import Avg, F, Func
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
 
@@ -138,7 +138,9 @@ def team_page(request, team_id):
 
 
 def teams(request):
-    teams_insts = Team.objects.all().order_by('name')
+    teams_insts = Team.objects\
+        .annotate(average_score=Avg("jump__points"))\
+        .order_by("-average_score")
     return render(request, 'teams.html', {'teams': teams_insts})
 
 

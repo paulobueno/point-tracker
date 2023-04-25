@@ -20,7 +20,7 @@
             <td>{{team.foundation}}</td>
             <td><i class="{{ team.country.flag_css }}"></i> {{team.country.name}}</td>
             <td>{{team.instagram}}</td>
-            <td>0</td>
+            <td>{{team.average_score|floatformat:2}}</td>
         </tr>
         {% endfor %}
         </tbody>
