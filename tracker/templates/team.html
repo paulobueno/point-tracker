@@ -116,7 +116,7 @@
 </script>
 {% if fooflyers %}
     <script>
-        var trendUrl = "{% url 'foo_transition_trend_all_data' %}"
+        var trendUrl = "{% url 'foo_transition_trend_all_data' %}?tag_filter={{tag_filter}}"
     </script>
 {% endif %}
 {% endblock %}

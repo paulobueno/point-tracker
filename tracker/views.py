@@ -299,9 +299,12 @@ def transition_trend_data(_, team_eid, point1, point2):
     return JsonResponse(output_data, safe=False)
 
 
-def foo_transition_trend_data(_, point1, point2):
+def foo_transition_trend_data(request, point1, point2):
     team = Team.objects.get(external_id=uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'))
     jumps = Jump.objects.filter(team=team)
+    tag_filter = request.GET.get('tag_filter', '')
+    if tag_filter not in ['', None]:
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
     transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
     data = defaultdict(list)
     output_data = []
@@ -318,11 +321,11 @@ def foo_transition_trend_data(_, point1, point2):
     return JsonResponse(output_data, safe=False)
 
 
-def foo_transition_trend_data_all(_):
+def foo_transition_trend_data_all(request):
     blocks = [p[0] for p in Point.blocks]
     data = {}
     for block in blocks:
-        data[block] = json.loads(foo_transition_trend_data(None, block, block).content)
+        data[block] = json.loads(foo_transition_trend_data(request, block, block).content)
     return JsonResponse(data, safe=False)
 
 
