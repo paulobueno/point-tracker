@@ -234,40 +234,69 @@ def block_transitions_comparison_data(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def team_jumps(request, team_external_id, fooflyers=False):
+def get_team_overview(team_external_id, tag_filter):
+    team = Team.objects.get(external_id=team_external_id)
+    blocks = [p[0] for p in Point.blocks]
+
+    team_jumps = Jump.objects.filter(team=team)
+    team_transitions = Transition.objects.filter(jump__in=team_jumps)
+    team_overview = {}
+    team_overview.update(team_jumps.aggregate(avg_points=Avg("points")))
+    team_overview.update(team_transitions.exclude(point_1_id__in=blocks,
+                                                  point_2_id__in=blocks).aggregate(avg_time_randoms=Avg("duration")))
+    team_overview.update(team_transitions.filter(point_1_id__in=blocks,
+                                                 point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
+
+    other_teams_jumps = Jump.objects.exclude(team=team)
+    other_teams_transitions = Transition.objects.filter(jump__in=other_teams_jumps)
+    other_teams_overview = {}
+    other_teams_overview.update(other_teams_jumps.aggregate(avg_points=Avg("points")))
+    other_teams_overview.update(other_teams_transitions.exclude(point_1_id__in=blocks,
+                                                                point_2_id__in=blocks).aggregate(avg_time_randoms=Avg("duration")))
+    other_teams_overview.update(other_teams_transitions.filter(point_1_id__in=blocks,
+                                                               point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
+
+    diff = {"avg_points": team_overview['avg_points'] - other_teams_overview['avg_points'],
+            "avg_time_randoms": team_overview['avg_time_randoms'] - other_teams_overview['avg_time_randoms'],
+            "avg_time_blocks": team_overview['avg_time_blocks'] - other_teams_overview['avg_time_blocks']}
+
+    percentage = {"avg_points": 100 * diff['avg_points'] / other_teams_overview['avg_points'],
+                  "avg_time_randoms": 100 * diff['avg_time_randoms'] / other_teams_overview['avg_time_randoms'],
+                  "avg_time_blocks": 100 * diff['avg_time_blocks'] / other_teams_overview['avg_time_blocks']}
+
+    results = {"team": team_overview,
+               "other_teams": other_teams_overview,
+               "diff": diff,
+               "percentage": percentage}
+    return results
+
+
+def team_jumps(request, team_external_id):
+    tag_filter = request.GET.get('tag_filter', '')
+    if request.method == "POST":
+        tag_filter = request.POST.get('tag_filter', tag_filter)
+        url = reverse('team_jumps', kwargs={'team_external_id': team_external_id})
+        url = f'{url}?tag_filter={tag_filter}'
+        return HttpResponseRedirect(url)
+
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
-    members = TeamMember.objects.filter(team__pk=team.id)
-    available_tags = Jump_Tags.objects.filter(jump__in=jumps).distinct()
-    blocks = [p[0] for p in Point.blocks]
-    tag_filter = request.GET.get('tag_filter', '')
-    block_filter = request.GET.get('block_filter', '1')
-    if request.method == "POST":
-        block_filter = request.POST.get('block_filter', block_filter)
-        tag_filter = request.POST.get('tag_filter', tag_filter)
-        if fooflyers:
-            url = reverse('fooflyers_jumps')
-        else:
-            url = reverse('team_jumps', kwargs={'team_external_id': team_external_id})
-        url = f'{url}?block_filter={block_filter}&tag_filter={tag_filter}'
-        return HttpResponseRedirect(url)
     if tag_filter not in ['', None]:
         jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
-    transitions = Transition.objects.filter(jump__in=jumps)
+
     return render(request, 'team.html', {'team': team,
-                                         'blocks': blocks,
-                                         'members': members,
+                                         'blocks': [p[0] for p in Point.blocks],
+                                         'members': TeamMember.objects.filter(team__pk=team.id),
                                          'jumps': jumps,
-                                         'transitions': transitions,
-                                         'available_tags': available_tags,
+                                         'transitions': Transition.objects.filter(jump__in=jumps),
+                                         'available_tags': Jump_Tags.objects.filter(jump__in=jumps).distinct(),
                                          'tag_filter': tag_filter,
-                                         'block_filter': block_filter,
-                                         'fooflyers': fooflyers})
+                                         'overview': get_team_overview(team_external_id, tag_filter)})
 
 
 def foo_jumps(request):
     team_uuid = uuid.UUID("497c2597-4dbb-4cb7-b92d-27cd641f6c9c")
-    return team_jumps(request, team_uuid, fooflyers=True)
+    return team_jumps(request, team_uuid)
 
 
 def team_jump(request, team_id, jump_id):
@@ -281,26 +310,8 @@ def track_select_team(request):
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
 
 
-def transition_trend_data(_, team_eid, point1, point2):
-    team = Team.objects.get(external_id=team_eid)
-    jumps = Jump.objects.filter(team=team)
-    transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
-    data = defaultdict(list)
-    output_data = []
-    for transition in transitions:
-        date = str(transition.jump.date)
-        duration = float(transition.duration)
-        data[date].append(duration)
-    for k, v in data.items():
-        output_data.append({'date': k,
-                            'mean': round(np.quantile(v, 0.5), 2),
-                            'q1': round(np.quantile(v, 0.25), 2),
-                            'q3': round(np.quantile(v, 0.75), 2)})
-    return JsonResponse(output_data, safe=False)
-
-
-def foo_transition_trend_data(request, point1, point2):
-    team = Team.objects.get(external_id=uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'))
+def transition_trend_data(request, team_external_id, point1, point2):
+    team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
     tag_filter = request.GET.get('tag_filter', '')
     if tag_filter not in ['', None]:
@@ -321,11 +332,11 @@ def foo_transition_trend_data(request, point1, point2):
     return JsonResponse(output_data, safe=False)
 
 
-def foo_transition_trend_data_all(request):
+def transition_trend_data_all(request, team_external_id):
     blocks = [p[0] for p in Point.blocks]
     data = {}
     for block in blocks:
-        data[block] = json.loads(foo_transition_trend_data(request, block, block).content)
+        data[block] = json.loads(transition_trend_data(request, team_external_id, block, block).content)
     return JsonResponse(data, safe=False)
 
 
