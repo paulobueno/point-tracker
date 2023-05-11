@@ -1,10 +1,11 @@
 import uuid
 from collections import defaultdict
+from urllib.parse import urlencode
 import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.urls import reverse
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, QueryDict
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.defaultfilters import upper
 import numpy as np
@@ -234,7 +235,7 @@ def block_transitions_comparison_data(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def get_team_overview(team_external_id, tag_filter):
+def get_team_overview(team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     blocks = [p[0] for p in Point.blocks]
 
@@ -271,18 +272,31 @@ def get_team_overview(team_external_id, tag_filter):
     return results
 
 
+def build_query_params(request, params_list):
+    query_params = {}
+    for param in params_list:
+        value = request.POST.get(param, request.GET.get(param, None))
+        if value in [None, '']:
+            continue
+        query_params.update({param: value})
+    return urlencode(query_params)
+
+
 def team_jumps(request, team_external_id):
-    tag_filter = request.GET.get('tag_filter', '')
+    query_params_keys = ['tag_filter', 'teams_category']
+
     if request.method == "POST":
-        tag_filter = request.POST.get('tag_filter', tag_filter)
         url = reverse('team_jumps', kwargs={'team_external_id': team_external_id})
-        url = f'{url}?tag_filter={tag_filter}'
+        params = build_query_params(request, query_params_keys)
+        if params:
+            url = url + "?" + params
+        print(build_query_params(request, query_params_keys))
         return HttpResponseRedirect(url)
 
     team = Team.objects.get(external_id=team_external_id)
     jumps = Jump.objects.filter(team=team)
-    if tag_filter not in ['', None]:
-        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+    if request.GET.get('tag_filter', None):
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter')))
 
     return render(request, 'team.html', {'team': team,
                                          'blocks': [p[0] for p in Point.blocks],
@@ -290,8 +304,9 @@ def team_jumps(request, team_external_id):
                                          'jumps': jumps,
                                          'transitions': Transition.objects.filter(jump__in=jumps),
                                          'available_tags': Jump_Tags.objects.filter(jump__in=jumps).distinct(),
-                                         'tag_filter': tag_filter,
-                                         'overview': get_team_overview(team_external_id, tag_filter)})
+                                         'tag_filter': request.GET.get('tag_filter'),
+                                         'query_params': build_query_params(request, query_params_keys),
+                                         'overview': get_team_overview(team_external_id)})
 
 
 def foo_jumps(request):
