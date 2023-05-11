@@ -156,11 +156,16 @@ def heatmap_transitions_data(request, team_external_id, exclude_team=False):
     all_transitions = dict([((_start, _end), dict((('duration_sum', 0), ('count', 0))))
                             for _start in randoms for _end in randoms])
     team = Team.objects.get(external_id=team_external_id)
-    jumps = Jump.objects.filter(team=team)
+
     if exclude_team:
         jumps = Jump.objects.exclude(team=team)
-    if (tag_filter not in ['', None, 'None']) and (not exclude_team):
-        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+        if request.GET.get('amp;teams_category', None):
+            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
+    else:
+        jumps = Jump.objects.filter(team=team)
+        if request.GET.get('tag_filter', None):
+            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter', None)))
+
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
     for row in transitions.values():
@@ -180,15 +185,19 @@ def heatmap_transitions_data(request, team_external_id, exclude_team=False):
 
 
 def block_transitions_data(request, team_external_id, exclude_team=False):
-    tag_filter = request.GET.get('tag_filter')
     blocks = [p[0] for p in Point.blocks]
     all_transitions = dict([((block, block), dict((('duration_sum', 0), ('count', 0)))) for block in blocks])
     team = Team.objects.get(external_id=team_external_id)
-    jumps = Jump.objects.filter(team=team)
+
     if exclude_team:
         jumps = Jump.objects.exclude(team=team)
-    if (tag_filter not in ['', None, 'None']) and (not exclude_team):
-        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+        if request.GET.get('amp;teams_category', None):
+            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
+    else:
+        jumps = Jump.objects.filter(team=team)
+        if request.GET.get('tag_filter', None):
+            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter', None)))
+
     transitions = Transition.objects.filter(jump__in=jumps)
     data = []
     for row in transitions.values():
@@ -222,6 +231,7 @@ def heatmap_transitions_comparison_data(request, team_external_id):
 
 
 def block_transitions_comparison_data(request, team_external_id):
+    print(request.GET)
     team_data = json.loads(block_transitions_data(request, team_external_id).content)
     other_teams_data = json.loads(block_transitions_data(request, team_external_id, exclude_team=True).content)
     data = []
@@ -235,11 +245,13 @@ def block_transitions_comparison_data(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def get_team_overview(team_external_id):
+def get_team_overview(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
     blocks = [p[0] for p in Point.blocks]
 
     team_jumps = Jump.objects.filter(team=team)
+    if request.GET.get('tag_filter', None):
+        team_jumps = team_jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter')))
     team_transitions = Transition.objects.filter(jump__in=team_jumps)
     team_overview = {}
     team_overview.update(team_jumps.aggregate(avg_points=Avg("points")))
@@ -249,26 +261,32 @@ def get_team_overview(team_external_id):
                                                  point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
 
     other_teams_jumps = Jump.objects.exclude(team=team)
-    other_teams_transitions = Transition.objects.filter(jump__in=other_teams_jumps)
-    other_teams_overview = {}
-    other_teams_overview.update(other_teams_jumps.aggregate(avg_points=Avg("points")))
-    other_teams_overview.update(other_teams_transitions.exclude(point_1_id__in=blocks,
-                                                                point_2_id__in=blocks).aggregate(avg_time_randoms=Avg("duration")))
-    other_teams_overview.update(other_teams_transitions.filter(point_1_id__in=blocks,
-                                                               point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
+    if request.GET.get('teams_category', None):
+        other_teams_jumps = other_teams_jumps.filter(team__category=request.GET.get('teams_category'))
 
-    diff = {"avg_points": team_overview['avg_points'] - other_teams_overview['avg_points'],
-            "avg_time_randoms": team_overview['avg_time_randoms'] - other_teams_overview['avg_time_randoms'],
-            "avg_time_blocks": team_overview['avg_time_blocks'] - other_teams_overview['avg_time_blocks']}
+    if other_teams_jumps:
+        other_teams_transitions = Transition.objects.filter(jump__in=other_teams_jumps)
+        other_teams_overview = {}
+        other_teams_overview.update(other_teams_jumps.aggregate(avg_points=Avg("points")))
+        other_teams_overview.update(other_teams_transitions.exclude(point_1_id__in=blocks,
+                                                                    point_2_id__in=blocks).aggregate(avg_time_randoms=Avg("duration")))
+        other_teams_overview.update(other_teams_transitions.filter(point_1_id__in=blocks,
+                                                                   point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
 
-    percentage = {"avg_points": 100 * diff['avg_points'] / other_teams_overview['avg_points'],
-                  "avg_time_randoms": 100 * diff['avg_time_randoms'] / other_teams_overview['avg_time_randoms'],
-                  "avg_time_blocks": 100 * diff['avg_time_blocks'] / other_teams_overview['avg_time_blocks']}
+        diff = {"avg_points": team_overview['avg_points'] - other_teams_overview['avg_points'],
+                "avg_time_randoms": team_overview['avg_time_randoms'] - other_teams_overview['avg_time_randoms'],
+                "avg_time_blocks": team_overview['avg_time_blocks'] - other_teams_overview['avg_time_blocks']}
 
-    results = {"team": team_overview,
-               "other_teams": other_teams_overview,
-               "diff": diff,
-               "percentage": percentage}
+        percentage = {"avg_points": 100 * diff['avg_points'] / other_teams_overview['avg_points'],
+                      "avg_time_randoms": 100 * diff['avg_time_randoms'] / other_teams_overview['avg_time_randoms'],
+                      "avg_time_blocks": 100 * diff['avg_time_blocks'] / other_teams_overview['avg_time_blocks']}
+
+        results = {"team": team_overview,
+                   "other_teams": other_teams_overview,
+                   "diff": diff,
+                   "percentage": percentage}
+    else:
+        results = {"team": team_overview}
     return results
 
 
@@ -290,7 +308,6 @@ def team_jumps(request, team_external_id):
         params = build_query_params(request, query_params_keys)
         if params:
             url = url + "?" + params
-        print(build_query_params(request, query_params_keys))
         return HttpResponseRedirect(url)
 
     team = Team.objects.get(external_id=team_external_id)
@@ -305,13 +322,9 @@ def team_jumps(request, team_external_id):
                                          'transitions': Transition.objects.filter(jump__in=jumps),
                                          'available_tags': Jump_Tags.objects.filter(jump__in=jumps).distinct(),
                                          'tag_filter': request.GET.get('tag_filter'),
+                                         'teams_category': request.GET.get('teams_category'),
                                          'query_params': build_query_params(request, query_params_keys),
-                                         'overview': get_team_overview(team_external_id)})
-
-
-def foo_jumps(request):
-    team_uuid = uuid.UUID("497c2597-4dbb-4cb7-b92d-27cd641f6c9c")
-    return team_jumps(request, team_uuid)
+                                         'overview': get_team_overview(request, team_external_id)})
 
 
 def team_jump(request, team_id, jump_id):
@@ -355,35 +368,3 @@ def transition_trend_data_all(request, team_external_id):
     return JsonResponse(data, safe=False)
 
 
-def foo_heatmap_transitions_comparison_data(request):
-    team_data = json.loads(heatmap_transitions_data(request,
-                                                    uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c')).content)
-    other_teams_data = json.loads(heatmap_transitions_data(request,
-                                                           uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'),
-                                                           exclude_team=True).content)
-    data = []
-    for t in team_data:
-        for ot in other_teams_data:
-            if t['start'] == ot['start'] and t['end'] == ot['end']:
-                duration = round(float(t['duration']) - float(ot['duration']), 2)
-                data.append({'start': t['start'],
-                             'end': t['end'],
-                             'duration': duration})
-    return JsonResponse(data, safe=False)
-
-
-def foo_block_transitions_comparison_data(request):
-    team_data = json.loads(block_transitions_data(request,
-                                                  uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c')).content)
-    other_teams_data = json.loads(block_transitions_data(request,
-                                                         uuid.UUID('497c2597-4dbb-4cb7-b92d-27cd641f6c9c'),
-                                                         exclude_team=True).content)
-    data = []
-    for t in team_data:
-        for ot in other_teams_data:
-            if t['start'] == ot['start'] and t['end'] == ot['end']:
-                duration = round(float(t['duration']) - float(ot['duration']), 2)
-                data.append({'start': t['start'],
-                             'end': t['end'],
-                             'duration': duration})
-    return JsonResponse(data, safe=False)

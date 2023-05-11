@@ -15,14 +15,21 @@
             <p class="h2">Filters</p>
             <form action="" method="post">
                 {% csrf_token %}
-                Tag Selection:
+                <p>Tag Selection:</p>
                 <select class="form-select" name="tag_filter">
-                    <option value="">---</option>
+                    <option value="">All</option>
                     {% for tag in available_tags %}
                     <option value="{{tag.external_id}}"
                             {% if tag_filter == tag.external_id|stringformat:"s" %} selected {% endif %}>{{tag.label}}
                     </option>
                     {% endfor %}
+                </select>
+                <p>Teams Category:</p>
+                <select class="form-select" name="teams_category">
+                    <option value="">All</option>
+                    <option value="O" {% if teams_category == "O" %} selected {% endif %}>Open</option>
+                    <option value="I" {% if teams_category == "I" %} selected {% endif %}>Inter</option>
+                    <option value="R" {% if teams_category == "R" %} selected {% endif %}>Rookie</option>
                 </select>
                 <hr>
                 <input class="w-20 btn navbar-foo" type="submit" value="Submit">
@@ -142,8 +149,8 @@
     </div>
 </div>
 <script src="{% static '/js/heatmap.js' %}"></script>
-<script>genHeatMap("{% url 'heatmap_transition' team.external_id %}?{{ query_params }}","#my_dataviz",[-2,-0.5])</script>
 <script>
+    genHeatMap("{% url 'heatmap_transition' team.external_id %}?{{ query_params }}","#my_dataviz",[-2,-0.5]);
     barChart("{% url 'block_transition' team.external_id %}?{{ query_params }}","#team_block_transitions", [0,5]);
     genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}?{{ query_params }}","#my_dataviz2",[-0.3,0.3]);
     barChart("{% url 'block_transition_comparison' team.external_id %}?{{ query_params }}","#team_block_transitions_comparison", [-1.5,2]);
