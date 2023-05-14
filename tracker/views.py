@@ -367,4 +367,3 @@ def transition_trend_data_all(request, team_external_id):
         data[block] = json.loads(transition_trend_data(request, team_external_id, block, block).content)
     return JsonResponse(data, safe=False)
 
-
