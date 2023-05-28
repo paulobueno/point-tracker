@@ -9,4 +9,4 @@ class User(AbstractUser):
     country = CountryField(null=True, blank=True)
     nickname = models.CharField(max_length=100, null=True)
     associated_team_members = models.ManyToManyField(TeamMember)
-    # external_id = models.UUIDField(default=uuid.uuid4, unique=True)
+    external_id = models.UUIDField(default=uuid.uuid4, unique=True)
