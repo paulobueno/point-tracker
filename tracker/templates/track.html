@@ -2,6 +2,7 @@
 {% block content %}
 {% load static %}
 <div class="container">
+    {% if not selected_team_uuid %}
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Coach and Staff parameters:</p>
@@ -22,9 +23,11 @@
             </form>
         </div>
     </div>
+    {% endif %}
+
     <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
-            <p class="h2">Tracker</p>
+            <p class="h2">Tracker: {{team.name}}</p>
             <form method="post"> {% csrf_token %}
                 <input type="hidden" id="team-selected" name="team-selected" value="{{selected_team_uuid}}">
                 <div class="row mb-3">

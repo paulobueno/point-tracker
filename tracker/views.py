@@ -12,6 +12,7 @@ import numpy as np
 from django.db.models import Avg, F
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
+from users.models import User
 
 
 def index(request):
@@ -53,15 +54,19 @@ def team_register(request):
 @login_required
 def track(request):
 
-    # IF STAFF:
-    #  (1) SHOW 'SELECT TEAM' SECTION (2) SAVE JUMPS AS SHARED
-    #  (1) AUTOCOMPLETE TEAM MEMBERS (2) IF SUBSCRIPTION USER: (2.1) SAVE JUMPS AS PRIVATE (2.2) SAVE JUMPS AS SHARED
+    user_teams = User.objects.get(id=request.user.id)\
+        .associated_team_members.all()\
+        .values_list('team__external_id', flat=True)
 
-
-    selected_team_uuid = request.GET.get('selected_team_uuid')
-    try:
-        selected_team_uuid = uuid.UUID(str(selected_team_uuid))
-    except ValueError:
+    if request.GET.get('selected_team_uuid'):
+        selected_team_uuid = request.GET.get('selected_team_uuid')
+        try:
+            selected_team_uuid = uuid.UUID(str(selected_team_uuid))
+        except ValueError:
+            selected_team_uuid = None
+    elif len(user_teams) == 1:
+        selected_team_uuid = user_teams.first()
+    else:
         selected_team_uuid = None
     context = {"teams": Team.objects.all(),
                "points": Point.objects.all(),
@@ -70,7 +75,8 @@ def track(request):
                "athletes": [],
                "selected_team_uuid": selected_team_uuid}
     if selected_team_uuid:
-        context.update({"athletes": TeamMember.objects.filter(team__external_id=selected_team_uuid)})
+        context.update({"athletes": TeamMember.objects.filter(team__external_id=selected_team_uuid),
+                        "team": Team.objects.get(external_id=selected_team_uuid)})
     if request.method == "POST":
         tag = request.POST.get('tag-select')
         jump_date = request.POST.get('jump-date')
