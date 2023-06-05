@@ -150,10 +150,10 @@
 </div>
 <script src="{% static '/js/heatmap.js' %}"></script>
 <script>
-    genHeatMap("{% url 'heatmap_transition' team.external_id %}?{{ query_params }}","#my_dataviz",[-2,-0.5]);
-    barChart("{% url 'block_transition' team.external_id %}?{{ query_params }}","#team_block_transitions", [0,5]);
-    genHeatMap("{% url 'heatmap_transition_comparison' team.external_id %}?{{ query_params }}","#my_dataviz2",[-0.3,0.3]);
-    barChart("{% url 'block_transition_comparison' team.external_id %}?{{ query_params }}","#team_block_transitions_comparison", [-1.5,2]);
-    var trendUrl = "{% url 'transition_trend_all_data' team.external_id %}?{{ query_params }}";
+    genHeatMap("{% url 'heatmap' team.external_id %}?{{ query_params }}","#my_dataviz",[-2,-0.5]);
+    barChart("{% url 'block' team.external_id %}?{{ query_params }}","#team_block_transitions", [0,5]);
+    genHeatMap("{% url 'heatmap_comparison' team.external_id %}?{{ query_params }}","#my_dataviz2",[-0.3,0.3]);
+    barChart("{% url 'block_comparison' team.external_id %}?{{ query_params }}","#team_block_transitions_comparison", [-1.5,2]);
+    var trendUrl = "{% url 'transition' team.external_id %}?{{ query_params }}";
 </script>
 {% endblock %}

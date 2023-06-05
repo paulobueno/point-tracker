@@ -1,14 +1,10 @@
 import uuid
-from collections import defaultdict
 from urllib.parse import urlencode
-import json
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.urls import reverse
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
-from django.template.defaultfilters import upper
-import numpy as np
 from django.db.models import Avg, F
 from tracker.forms import TeamRegister, AthleteRegister
 from tracker.models import Team, Jump, Pool, Point, JumpAnalytic, TeamMember, Transition, Jump_Tags
@@ -53,9 +49,8 @@ def team_register(request):
 
 @login_required
 def track(request):
-
-    user_teams = User.objects.get(id=request.user.id)\
-        .associated_team_members.all()\
+    user_teams = User.objects.get(id=request.user.id) \
+        .associated_team_members.all() \
         .values_list('team__external_id', flat=True)
 
     if request.GET.get('selected_team_uuid'):
@@ -151,8 +146,8 @@ def team_page(request, team_id):
 
 
 def teams(request):
-    teams_insts = Team.objects\
-        .annotate(average_score=Avg("jump__points"))\
+    teams_insts = Team.objects \
+        .annotate(average_score=Avg("jump__points")) \
         .order_by("-average_score")
     return render(request, 'teams.html', {'teams': teams_insts})
 
@@ -160,100 +155,6 @@ def teams(request):
 def athletes(request):
     athletes_insts = TeamMember.objects.all().order_by('team', 'name')
     return render(request, 'athletes.html', {'athletes': athletes_insts})
-
-
-def heatmap_transitions_data(request, team_external_id, exclude_team=False):
-    tag_filter = request.GET.get('tag_filter')
-    randoms = [p[0] for p in Point.randoms]
-    all_transitions = dict([((_start, _end), dict((('duration_sum', 0), ('count', 0))))
-                            for _start in randoms for _end in randoms])
-    team = Team.objects.get(external_id=team_external_id)
-
-    if exclude_team:
-        jumps = Jump.objects.exclude(team=team)
-        if request.GET.get('amp;teams_category', None):
-            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
-    else:
-        jumps = Jump.objects.filter(team=team)
-        if request.GET.get('tag_filter', None):
-            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter', None)))
-
-    transitions = Transition.objects.filter(jump__in=jumps)
-    data = []
-    for row in transitions.values():
-        if row.get('point_1_id') in randoms and row.get('point_2_id') in randoms:
-            k = (str(row.get('point_1_id')), str(row.get('point_2_id')))
-            v = all_transitions.get(k)
-            all_transitions.update({k: {'duration_sum': v.get('duration_sum') + row.get('duration'),
-                                        'count': v.get('count') + 1}})
-    for k in all_transitions.keys():
-        if all_transitions.get(k).get('count') > 0:
-            duration = all_transitions.get(k).get('duration_sum') / all_transitions.get(k).get('count')
-            data.append({'start': k[0],
-                         'end': k[1],
-                         'duration': round(duration, 2)})
-    data = sorted(data, key=lambda d: (d['start'], d['end']), reverse=True)
-    return JsonResponse(data, safe=False)
-
-
-def block_transitions_data(request, team_external_id, exclude_team=False):
-    blocks = [p[0] for p in Point.blocks]
-    all_transitions = dict([((block, block), dict((('duration_sum', 0), ('count', 0)))) for block in blocks])
-    team = Team.objects.get(external_id=team_external_id)
-
-    if exclude_team:
-        jumps = Jump.objects.exclude(team=team)
-        if request.GET.get('amp;teams_category', None):
-            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
-    else:
-        jumps = Jump.objects.filter(team=team)
-        if request.GET.get('tag_filter', None):
-            jumps = jumps.filter(jump_tags__external_id=uuid.UUID(request.GET.get('tag_filter', None)))
-
-    transitions = Transition.objects.filter(jump__in=jumps)
-    data = []
-    for row in transitions.values():
-        if row.get('point_1_id') in blocks and row.get('point_1_id') == row.get('point_2_id'):
-            k = (str(row.get('point_1_id')), str(row.get('point_2_id')))
-            v = all_transitions.get(k)
-            all_transitions.update({k: {'duration_sum': v.get('duration_sum') + row.get('duration'),
-                                        'count': v.get('count') + 1}})
-    for k in all_transitions.keys():
-        if all_transitions.get(k).get('count') > 0:
-            duration = all_transitions.get(k).get('duration_sum') / all_transitions.get(k).get('count')
-            data.append({'start': k[0],
-                         'end': k[1],
-                         'duration': round(duration, 2)})
-    data = sorted(data, key=lambda d: int(d['start']))
-    return JsonResponse(data, safe=False)
-
-
-def heatmap_transitions_comparison_data(request, team_external_id):
-    team_data = json.loads(heatmap_transitions_data(request, team_external_id).content)
-    other_teams_data = json.loads(heatmap_transitions_data(request, team_external_id, exclude_team=True).content)
-    data = []
-    for t in team_data:
-        for ot in other_teams_data:
-            if t['start'] == ot['start'] and t['end'] == ot['end']:
-                duration = round(float(t['duration']) - float(ot['duration']), 2)
-                data.append({'start': t['start'],
-                             'end': t['end'],
-                             'duration': duration})
-    return JsonResponse(data, safe=False)
-
-
-def block_transitions_comparison_data(request, team_external_id):
-    team_data = json.loads(block_transitions_data(request, team_external_id).content)
-    other_teams_data = json.loads(block_transitions_data(request, team_external_id, exclude_team=True).content)
-    data = []
-    for t in team_data:
-        for ot in other_teams_data:
-            if t['start'] == ot['start'] and t['end'] == ot['end']:
-                duration = round(float(t['duration']) - float(ot['duration']), 2)
-                data.append({'start': t['start'],
-                             'end': t['end'],
-                             'duration': duration})
-    return JsonResponse(data, safe=False)
 
 
 def get_team_overview(request, team_external_id):
@@ -280,9 +181,11 @@ def get_team_overview(request, team_external_id):
         other_teams_overview = {}
         other_teams_overview.update(other_teams_jumps.aggregate(avg_points=Avg("points")))
         other_teams_overview.update(other_teams_transitions.exclude(point_1_id__in=blocks,
-                                                                    point_2_id__in=blocks).aggregate(avg_time_randoms=Avg("duration")))
+                                                                    point_2_id__in=blocks).aggregate(
+            avg_time_randoms=Avg("duration")))
         other_teams_overview.update(other_teams_transitions.filter(point_1_id__in=blocks,
-                                                                   point_1_id=F("point_2_id")).aggregate(avg_time_blocks=Avg("duration")))
+                                                                   point_1_id=F("point_2_id")).aggregate(
+            avg_time_blocks=Avg("duration")))
 
         diff = {"avg_points": team_overview['avg_points'] - other_teams_overview['avg_points'],
                 "avg_time_randoms": team_overview['avg_time_randoms'] - other_teams_overview['avg_time_randoms'],
@@ -347,34 +250,3 @@ def track_select_team(request):
     if request.method == 'POST':
         selected_team_uuid = request.POST.get('team-select')
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
-
-
-def transition_trend_data(request, team_external_id, point1, point2):
-    team = Team.objects.get(external_id=team_external_id)
-    jumps = Jump.objects.filter(team=team)
-    tag_filter = request.GET.get('tag_filter', '')
-    if tag_filter not in ['', None]:
-        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
-    transitions = Transition.objects.filter(jump__in=jumps, point_1_id=upper(point1), point_2_id=upper(point2))
-    data = defaultdict(list)
-    output_data = []
-    for transition in transitions:
-        date = str(transition.jump.date)
-        duration = float(transition.duration)
-        data[date].append(duration)
-    for k, v in data.items():
-        output_data.append({'date': k,
-                            'mean': round(np.quantile(v, 0.5), 2),
-                            'q1': round(np.quantile(v, 0.25), 2),
-                            'q3': round(np.quantile(v, 0.75), 2)})
-    output_data.sort(key=lambda x: x['date'])
-    return JsonResponse(output_data, safe=False)
-
-
-def transition_trend_data_all(request, team_external_id):
-    blocks = [p[0] for p in Point.blocks]
-    data = {}
-    for block in blocks:
-        data[block] = json.loads(transition_trend_data(request, team_external_id, block, block).content)
-    return JsonResponse(data, safe=False)
-

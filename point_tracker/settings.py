@@ -32,7 +32,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tracker.apps.TrackerConfig',
     'django_countries',
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'api'
 ]
 
 MIDDLEWARE = [
