@@ -41,13 +41,27 @@ class TeamMember(models.Model):
         return str(self.name) + " (" + str(self.nickname) + ") - " + str(self.team)
 
 
+class PointManager(models.Manager):
+    @staticmethod
+    def get_randoms():
+        return [random[0] for random in Point.randoms]
+
+    @staticmethod
+    def get_blocks():
+        return [blocks[0] for blocks in Point.blocks]
+
+    @staticmethod
+    def get_all_points():
+        return PointManager.get_randoms() + PointManager.get_blocks()
+
+
 class Point(models.Model):
-    randoms = [('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D'), ('E', 'E'),
-               ('F', 'F'), ('G', 'G'), ('H', 'H'), ('J', 'J'), ('K', 'K'),
-               ('L', 'L'), ('M', 'M'), ('N', 'N'), ('O', 'O'), ('P', 'P'), ('Q', 'Q')]
+    randoms = [(random, random) for random in 'ABCDEFGHJKLMNOPQ']
     blocks = [(str(block), str(block)) for block in range(1, 23)]
     name = models.CharField(max_length=2, choices=randoms + blocks, primary_key=True)
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    objects = PointManager()
 
     def __str__(self):
         return str(self.name)
@@ -85,6 +99,20 @@ class Jump_Tags(models.Model):
         return str(self.label)
 
 
+class JumpManager(models.Manager):
+    def get_jumps(self, tag=None, team=None, team_category=None, exclude_team=False):
+        filters = {'jump_tags__external_id': tag,
+                   'team__external_id': team,
+                   'team__category': team_category}
+        filters = {key: value for key, value in filters.items() if value is not None}
+        if exclude_team and team is not None:
+            jumps = self.exclude(team__external_id=filters.pop('team__external_id'))
+            jumps = jumps.filter(**filters)
+        else:
+            jumps = self.filter(**filters)
+        return jumps
+
+
 class Jump(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     jump_tags = models.ManyToManyField(Jump_Tags)
@@ -96,6 +124,8 @@ class Jump(models.Model):
     busts = models.IntegerField(default=0)
     repetition_number = models.IntegerField(editable=False)
     external_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+
+    objects = JumpManager()
 
     class Meta:
         unique_together = (('team',
