@@ -15,8 +15,8 @@ def heatmap(request, team_external_id, exclude_team=False):
 
     if exclude_team:
         jumps = Jump.objects.exclude(team=team)
-        if request.GET.get('amp;teams_category', None):
-            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
+        if request.GET.get('teams_category', None):
+            jumps = jumps.filter(team__category=request.GET.get('teams_category'))
     else:
         jumps = Jump.objects.filter(team=team)
         if request.GET.get('tag_filter', None):
@@ -47,8 +47,8 @@ def block(request, team_external_id, exclude_team=False):
 
     if exclude_team:
         jumps = Jump.objects.exclude(team=team)
-        if request.GET.get('amp;teams_category', None):
-            jumps = jumps.filter(team__category=request.GET.get('amp;teams_category'))
+        if request.GET.get('teams_category', None):
+            jumps = jumps.filter(team__category=request.GET.get('teams_category'))
     else:
         jumps = Jump.objects.filter(team=team)
         if request.GET.get('tag_filter', None):
