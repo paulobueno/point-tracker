@@ -54,6 +54,12 @@ class PointManager(models.Manager):
     def get_all_points():
         return PointManager.get_randoms() + PointManager.get_blocks()
 
+    @staticmethod
+    def create_all_points():
+        for point in PointManager.get_randoms() + PointManager.get_blocks():
+            Point.objects.create(name=point)
+        return None
+
 
 class Point(models.Model):
     randoms = [(random, random) for random in 'ABCDEFGHJKLMNOPQ']

@@ -1,5 +1,7 @@
 from collections import defaultdict
 from django.http import JsonResponse
+from django.db.models import Avg, Count
+from django.db.models.functions import TruncDate
 from tracker.models import Point, Team, Jump, Transition
 from django.template.defaultfilters import upper
 import numpy as np
@@ -128,3 +130,18 @@ def transition(request, team_external_id):
     for block in blocks:
         data[block] = json.loads(transition_get(request, team_external_id, block, block).content)
     return JsonResponse(data, safe=False)
+
+
+def training_points(request, team_external_id):
+    team = Team.objects.get(external_id=team_external_id)
+    jumps = Jump.objects.filter(team=team)
+    values = (jumps
+              .values('date')
+              .annotate(avg_points=Avg('points'))
+              .annotate(total_jumps=Count('points')))
+    formatted_json = {}
+    for entry in values:
+        values = {'avg_points': entry['avg_points'],
+                  'total_jumps': entry['total_jumps']}
+        formatted_json[entry['date'].strftime('%Y-%m-%d')] = values
+    return JsonResponse({k: formatted_json[k] for k in sorted(formatted_json)})
