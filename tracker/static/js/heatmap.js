@@ -259,3 +259,64 @@ function genBlockTrend(originalData, selectedId) {
            .attr("stroke", "steelblue")
            .attr("stroke-width", 1.5)
            .attr("d", lineMean);}
+
+function genAvgTrainPoints(jsonData, selectedId) {
+    d3.json(jsonData).then(function(jsonData) {
+
+        var parseDate = d3.utcParse("%Y-%m-%d");
+        const data = Object.keys(jsonData).map((d) => (
+            {
+            date: parseDate(d),
+            avg_points: jsonData[d].avg_points,
+            total_jumps: jsonData[d].total_jumps
+            }
+        ));
+
+        console.log(data)
+
+        // Set up the dimensions of the chart
+        const width = 600;
+        const height = 400;
+        const margin = { top: 20, right: 30, bottom: 30, left: 50 };
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        // Create scales for X and Y axes
+        const xScale = d3.scaleTime()
+            .domain(d3.extent(data, (d) => d.date))
+            .range([0, innerWidth]);
+
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(data, (d) => d.avg_points)])
+            .range([innerHeight, 0]);
+
+        // Create SVG element
+        const svg = d3.select(selectedId)
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        // Create X and Y axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
+        // Append the axes to the SVG element
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, ${innerHeight + margin.top})`)
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("transform", `translate(${margin.left}, ${margin.top})`)
+            .call(yAxis);
+
+        // Plot the data points as circles
+        svg.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", (d) => xScale(d.date) + margin.left)
+            .attr("cy", (d) => yScale(d.avg_points) + margin.top)
+            .attr("r", 5)
+            .attr("fill", "steelblue");
+    })
+}
