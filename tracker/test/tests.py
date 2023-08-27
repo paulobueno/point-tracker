@@ -1,7 +1,7 @@
 from django.urls import resolve
 from django.test import TestCase
-
-from tracker.models import Point, Pool, Team, Jump
+from django.db.models import Avg
+from tracker.models import Point, Pool, Team, Jump, Transition
 from tracker.test import test_helper
 from tracker.views import teams
 from django.http import HttpRequest
@@ -52,7 +52,7 @@ class ModelTests(TestCase):
     def test_create_jump(self):
         test_helper.init_db()
         team = test_helper.create_team()
-        pool = test_helper.create_pool()
+        pool = test_helper.create_pool('A', 'B')
         Jump.objects.create(team=team,
                             pool=pool,
                             date='2020-01-01',
@@ -83,8 +83,34 @@ class TestHelpersTest(TestCase):
     def test_create_jump(self):
         test_helper.init_db()
         team = test_helper.create_team()
-        pool = test_helper.create_pool()
+        pool = test_helper.create_pool('A', 'B')
         test_helper.create_jump(team, pool, '2022-01-01', 15)
         stored_jump = Jump.objects.all().first()
         self.assertEqual(stored_jump.date.strftime("%Y-%m-%d"), '2022-01-01')
         self.assertEqual(stored_jump.points, 15)
+
+
+class TestJumpTransitions(TestCase):
+
+    def setUp(self):
+        test_helper.init_db()
+        self.team = test_helper.create_team()
+
+    def test_create_jump_transitions(self):
+        pool = test_helper.create_pool('A', 'B', 'C')
+        jump = test_helper.create_jump(self.team, pool)
+        test_helper.create_jump_transitions(jump, [1, 2, 3, 4])
+        stored_transitions = Transition.objects.all()
+        self.assertEqual(4, len(stored_transitions))
+        self.assertEqual(2.5, stored_transitions.aggregate(avg_duration=Avg('duration'))['avg_duration'])
+
+    def test_create_jump_transitions_to_blocks(self):
+        pool = test_helper.create_pool('2', '12')
+        point_2 = Point.objects.get(name='2')
+        point_12 = Point.objects.get(name='12')
+        jump = test_helper.create_jump(self.team, pool)
+        test_helper.create_jump_transitions(jump, [1, 2, 3, 4])
+        self.assertEqual(1, len(Transition.objects.filter(point_1=point_2, point_2=point_12)))
+        self.assertEqual(1, len(Transition.objects.filter(point_1=point_12, point_2=point_2)))
+        self.assertEqual(1, len(Transition.objects.filter(point_1=point_2, point_2=point_2)))
+        self.assertEqual(1, len(Transition.objects.filter(point_1=point_12, point_2=point_12)))

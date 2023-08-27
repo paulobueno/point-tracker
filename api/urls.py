@@ -10,4 +10,5 @@ urlpatterns = [
     path('v1/transition/data/<uuid:team_eid>/<point1>/<point2>', views.transition_get, name='transition_trend_data'),
     path('v1/transition/plain/<uuid:team_external_id>', views.transition, name='transition'),
     path('v1/training/points/<uuid:team_external_id>', views.training_points, name='training_points'),
+    path('v1/training/randoms-time/<uuid:team_external_id>', views.training_randoms_time, name='training_randoms_time'),
 ]

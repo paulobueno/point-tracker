@@ -1,6 +1,7 @@
 from collections import defaultdict
 from django.http import JsonResponse
 from django.db.models import Avg, Count
+from django.core.serializers import serialize
 from django.db.models.functions import TruncDate
 from tracker.models import Point, Team, Jump, Transition
 from django.template.defaultfilters import upper
@@ -145,3 +146,16 @@ def training_points(request, team_external_id):
                   'total_jumps': entry['total_jumps']}
         formatted_json[entry['date'].strftime('%Y-%m-%d')] = values
     return JsonResponse({k: formatted_json[k] for k in sorted(formatted_json)})
+
+
+def training_randoms_time(request, team_external_id):
+    team = Team.objects.get(external_id=team_external_id)
+    transitions = Transition.objects.filter(jump__team=team)
+    for block_name in Point.objects.get_blocks():
+        point = Point.objects.get(name=block_name)
+        transitions = transitions.exclude(point_1=point, point_2=point)
+    data = (transitions
+            .values('jump__date')
+            .annotate(avg_duration=Avg('duration')))
+    data = {v['jump__date'].strftime('%Y-%m-%d'): float(v['avg_duration']) for v in data}
+    return JsonResponse({k: data[k] for k in sorted(data)}, safe=False)
