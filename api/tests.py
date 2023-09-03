@@ -50,28 +50,42 @@ class TimeBetweenRandomsTest(TestCase):
 
     def test_training_randoms_time_response_one_jump_pool_only_randoms(self):
         jump = test_helper.create_jump(self.team, self.pool_only_randoms, '2023-01-01')
-        test_helper.create_jump_transitions(jump, [1, 2, 3])
+        test_helper.create_jump_transitions(jump, [0, 1, 2, 3, 4])
 
         url = reverse('training_randoms_time', kwargs={'team_external_id': self.team.external_id})
-        response = self.client.get(url)
-        self.assertJSONEqual(response.content, {'2023-01-01': 2})
+        response = json.loads(self.client.get(url).content.decode('utf-8'))
+        self.assertJSONEqual(json.dumps(response[0]), {'date': '2023-01-01',
+                                                       'q1': 1,
+                                                       'mean': 2,
+                                                        'q3': 3})
 
     def test_training_randoms_time_response_one_jump_pool_only_blocks(self):
         jump = test_helper.create_jump(self.team, self.pool_only_blocks, '2023-01-01')
         test_helper.create_jump_transitions(jump, [10, 2, 30])
 
         url = reverse('training_randoms_time', kwargs={'team_external_id': self.team.external_id})
-        response = self.client.get(url)
-        self.assertJSONEqual(response.content, {'2023-01-01': 2})
+        response = json.loads(self.client.get(url).content)
+        self.assertJSONEqual(json.dumps(response[0]), {'date': '2023-01-01',
+                                                       'q1': 2,
+                                                       'mean': 2,
+                                                       'q3': 2})
 
     def test_training_randoms_time_response_one_jump_pool_mixed_points(self):
         jump_1 = test_helper.create_jump(self.team, self.pool_mixed_points, '2023-01-01')
         jump_2 = test_helper.create_jump(self.team, self.pool_mixed_points, '2023-01-02')
         test_helper.create_jump_transitions(jump_1, [1, 2, 3, 4])
-        test_helper.create_jump_transitions(jump_2, [1, 10, 20, 4])
+        test_helper.create_jump_transitions(jump_2, [1, 10, 15, 4, 20, 2, 0, 30])
 
         url = reverse('training_randoms_time', kwargs={'team_external_id': self.team.external_id})
-        response = self.client.get(url)
-        self.assertJSONEqual(response.content, {'2023-01-01': 2.5,
-                                                '2023-01-02': 15})
+        response = json.loads(self.client.get(url).content)
+        self.assertJSONEqual(json.dumps(response[0]), {'date': '2023-01-01',
+                                                       'q1': 2.25,
+                                                       'mean': 2.5,
+                                                       'q3': 2.75})
+        self.assertJSONEqual(json.dumps(response[1]), {'date': '2023-01-02',
+                                                       'q1': 10,
+                                                       'mean': 15,
+                                                       'q3': 20})
+
+
 

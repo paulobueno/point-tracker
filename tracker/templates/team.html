@@ -147,11 +147,18 @@
             </div>
         </div>
     </div>
-        <div class="row">
+    <div class="row">
         <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
             <p class="h2">Avg points in 35 seconds</p>
             <p class="h6">Avg. points by day</p>
             <div id="avg_points"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col shadow-sm p-2 mb-5 bg-white rounded m-2">
+            <p class="h2">Randoms time spent</p>
+            <p class="h6">Quartiles and median between randoms and from/to blocks.</p>
+            <div id="randoms_time_spent"></div>
         </div>
     </div>
 </div>
@@ -163,5 +170,6 @@
     genHeatMap("{% url 'heatmap_comparison' team.external_id %}?{{ query_params|safe }}","#my_dataviz2",[-0.3,0.3]);
     barChart("{% url 'block_comparison' team.external_id %}?{{ query_params|safe }}","#team_block_transitions_comparison", [-1.5,2]);
     var trendUrl = "{% url 'transition' team.external_id %}?{{ query_params|safe }}";
+    var randomsTimeUrl = "{% url 'training_randoms_time' team.external_id %}";
 </script>
 {% endblock %}

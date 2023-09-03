@@ -1,23 +1,25 @@
-let apiResult;
-
 function toggle(el){
     var value = el.options[el.selectedIndex].value;
     genBlockTrend(apiResult[value],'#time_trend');
 }
 
-async function fetchApiData() {
-          const response = await fetch(trendUrl);
+async function fetchApiData(Url) {
+          const response = await fetch(Url);
           const data = await response.json();
-          apiResult = data;
+          return data;
         };
 
+let trendResults;
+let randomsResults;
 async function useApiResult() {
-  await fetchApiData();
-  genBlockTrend(apiResult["1"],'#time_trend');
+  trendResults = await fetchApiData(trendUrl);
+  randomsResults = await fetchApiData(randomsTimeUrl);
+  genBlockTrend(trendResults["1"],'#time_trend');
+  genRandomsTime(randomsResults,'#randoms_time_spent');
 }
 
 window.addEventListener('load', function() {
-    fetchApiData();
+    fetchApiData(trendUrl);
     useApiResult();
 });
 
@@ -260,6 +262,81 @@ function genBlockTrend(originalData, selectedId) {
            .attr("stroke-width", 1.5)
            .attr("d", lineMean);}
 
+function genRandomsTime(originalData, selectedId) {
+    d3.select(selectedId).selectAll("*").remove();
+    var data = [],
+        margin = {top: 35, right: 35, bottom: 35, left: 35},
+        width = 700 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom,
+        svg = d3.select(selectedId)
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+        x = d3.scaleTime().range([0, width]),
+        y = d3.scaleLinear().range([height, 0]),
+        parseDate = d3.utcParse("%Y-%m-%d"),
+        formatDate = d3.timeFormat("%d-%m"),
+        lineMean = d3.line()
+                     .x(function(d) { return x(d.date); })
+                     .y(function(d) { return y(d.mean); }),
+        lineQ1 = d3.line()
+                   .x(function(d) { return x(d.date); })
+                   .y(function(d) { return y(d.q1); }),
+        lineQ3 = d3.line()
+                   .x(function(d) { return x(d.date); })
+                   .y(function(d) { return y(d.q3); });
+
+
+          originalData.forEach(function(d) {
+            // Create a new object with the transformed fields
+            var cleanedDatum = {
+              date: parseDate(d.date),
+              mean: +d.mean,
+              q1: +d.q1,
+              q3: +d.q3
+            };
+
+            data.push(cleanedDatum);
+          });
+
+        // Scale the range of the data
+        x.domain(d3.extent(data, function(d) {  return d.date; }));
+        y.domain([d3.min(data, function(d) {  return d.q1; })-0.5, d3.max(data, function(d) {  return d.q3; })]);
+
+        // Add the x axis
+        svg.append("g")
+           .attr("class", "x axis")
+           .attr("transform", "translate(0," + height + ")")
+           .call(d3.axisBottom(x).ticks(d3.timeWeek.every(2)));
+
+        // Add the y axis
+        svg.append("g")
+           .attr("class", "y axis")
+           .call(d3.axisLeft(y));
+
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .style("stroke-dasharray", ("3, 3"))
+           .attr("stroke-width", 1)
+           .attr("d", lineQ3);
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .style("stroke-dasharray", ("3, 3"))
+           .attr("stroke-width", 1)
+           .attr("d", lineQ1);
+        svg.append("path")
+           .datum(data)
+           .attr("fill", "none")
+           .attr("stroke", "steelblue")
+           .attr("stroke-width", 1.5)
+           .attr("d", lineMean);}
+
 function genAvgTrainPoints(jsonData, selectedId) {
     d3.json(jsonData).then(function(jsonData) {
 
@@ -271,8 +348,6 @@ function genAvgTrainPoints(jsonData, selectedId) {
             total_jumps: jsonData[d].total_jumps
             }
         ));
-
-        console.log(data)
 
         // Set up the dimensions of the chart
         const width = 600;

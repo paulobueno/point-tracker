@@ -154,8 +154,16 @@ def training_randoms_time(request, team_external_id):
     for block_name in Point.objects.get_blocks():
         point = Point.objects.get(name=block_name)
         transitions = transitions.exclude(point_1=point, point_2=point)
-    data = (transitions
-            .values('jump__date')
-            .annotate(avg_duration=Avg('duration')))
-    data = {v['jump__date'].strftime('%Y-%m-%d'): float(v['avg_duration']) for v in data}
-    return JsonResponse({k: data[k] for k in sorted(data)}, safe=False)
+    data = defaultdict(list)
+    for t in transitions.values('jump__date', 'duration'):
+        date = t['jump__date'].strftime('%Y-%m-%d')
+        duration = float(t['duration'])
+        data[date].append(duration)
+    output_data = []
+    for k, v in data.items():
+        output_data.append({'date': k,
+                            'mean': round(np.quantile(v, 0.5), 2),
+                            'q1': round(np.quantile(v, 0.25), 2),
+                            'q3': round(np.quantile(v, 0.75), 2)})
+    output_data.sort(key=lambda x: x['date'])
+    return JsonResponse(output_data, safe=False)
