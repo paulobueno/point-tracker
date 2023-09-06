@@ -1,4 +1,4 @@
-from tracker.models import Point, Pool, Team, Jump, Transition
+from tracker.models import Point, Pool, Team, Jump, Transition, Jump_Tags
 from itertools import cycle, islice, pairwise
 
 
@@ -18,11 +18,14 @@ def create_pool(point_1, point_2, point_3=None, point_4=None, point_5=None):
                                point_5=Point.objects.filter(name=point_5).first())
 
 
-def create_jump(team, pool, date='2020-01-01', points=10):
-    return Jump.objects.create(team=team,
+def create_jump(team, pool, date='2020-01-01', points=10, jump_tags=None):
+    jump = Jump.objects.create(team=team,
                                pool=pool,
                                date=date,
                                points=points)
+    if isinstance(jump_tags, list) and len(jump_tags) > 0:
+        jump.jump_tags.set(jump_tags)
+    return jump
 
 
 def create_jump_transition(jump, duration=2, point_1='A', point_2='B'):
@@ -55,3 +58,6 @@ def create_jump_transitions(jump, durations):
         points = next(pool)
         create_jump_transition(jump, duration, points[0], points[1])
 
+
+def create_jump_tag(label):
+    return Jump_Tags.objects.create(label=label)

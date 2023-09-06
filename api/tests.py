@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.urls import resolve, reverse
 from api.views import training_points, training_randoms_time
 import tracker.test.test_helper as test_helper
+from urllib.parse import urlencode
 
 
 class TrainingPointsApiTest(TestCase):
@@ -57,7 +58,7 @@ class TimeBetweenRandomsTest(TestCase):
         self.assertJSONEqual(json.dumps(response[0]), {'date': '2023-01-01',
                                                        'q1': 1,
                                                        'mean': 2,
-                                                        'q3': 3})
+                                                       'q3': 3})
 
     def test_training_randoms_time_response_one_jump_pool_only_blocks(self):
         jump = test_helper.create_jump(self.team, self.pool_only_blocks, '2023-01-01')
@@ -70,7 +71,7 @@ class TimeBetweenRandomsTest(TestCase):
                                                        'mean': 2,
                                                        'q3': 2})
 
-    def test_training_randoms_time_response_one_jump_pool_mixed_points(self):
+    def test_training_randoms_time_response_two_jumps_pool_mixed_points(self):
         jump_1 = test_helper.create_jump(self.team, self.pool_mixed_points, '2023-01-01')
         jump_2 = test_helper.create_jump(self.team, self.pool_mixed_points, '2023-01-02')
         test_helper.create_jump_transitions(jump_1, [1, 2, 3, 4])
@@ -87,5 +88,19 @@ class TimeBetweenRandomsTest(TestCase):
                                                        'mean': 15,
                                                        'q3': 20})
 
+    def test_filtering_jumps_by_tag(self):
+        tag_1 = test_helper.create_jump_tag('tag_1')
+        tag_2 = test_helper.create_jump_tag('tag_2')
+        jump_1 = test_helper.create_jump(self.team, self.pool_only_randoms, '2023-01-01', 10, [tag_1])
+        jump_2 = test_helper.create_jump(self.team, self.pool_only_randoms, '2023-01-02', 10, [tag_2])
+        test_helper.create_jump_transitions(jump_1, [0, 1, 2, 3, 4])
+        test_helper.create_jump_transitions(jump_2, [0, 1, 2, 3, 4])
 
-
+        url = (reverse('training_randoms_time', kwargs={'team_external_id': self.team.external_id})
+               + '?' + urlencode({'tag_filter': tag_1.external_id}))
+        response = json.loads(self.client.get(url).content.decode('utf-8'))
+        self.assertEqual(1, len(response))
+        self.assertJSONEqual(json.dumps(response[0]), {'date': '2023-01-01',
+                                                       'q1': 1,
+                                                       'mean': 2,
+                                                       'q3': 3})

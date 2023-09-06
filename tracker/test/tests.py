@@ -1,7 +1,7 @@
 from django.urls import resolve
 from django.test import TestCase
 from django.db.models import Avg
-from tracker.models import Point, Pool, Team, Jump, Transition
+from tracker.models import Point, Pool, Team, Jump, Transition, Jump_Tags
 from tracker.test import test_helper
 from tracker.views import teams
 from django.http import HttpRequest
@@ -88,6 +88,18 @@ class TestHelpersTest(TestCase):
         stored_jump = Jump.objects.all().first()
         self.assertEqual(stored_jump.date.strftime("%Y-%m-%d"), '2022-01-01')
         self.assertEqual(stored_jump.points, 15)
+
+    def test_create_jump_tag(self):
+        test_helper.init_db()
+        team = test_helper.create_team()
+        pool = test_helper.create_pool('A', 'B')
+        tag_1 = test_helper.create_jump_tag('Training')
+        tag_2 = test_helper.create_jump_tag('Outdoor')
+        test_helper.create_jump(team, pool, '2022-01-01', 15, [tag_1, tag_2])
+        stored_jump = Jump.objects.all().first()
+        stored_jump_tags_label = [tag.label for tag in stored_jump.jump_tags.all()]
+        self.assertIn('Training', stored_jump_tags_label)
+        self.assertIn('Outdoor', stored_jump_tags_label)
 
 
 class TestJumpTransitions(TestCase):

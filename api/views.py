@@ -150,7 +150,11 @@ def training_points(request, team_external_id):
 
 def training_randoms_time(request, team_external_id):
     team = Team.objects.get(external_id=team_external_id)
-    transitions = Transition.objects.filter(jump__team=team)
+    jumps = Jump.objects.filter(team=team)
+    tag_filter = request.GET.get('tag_filter', '')
+    if tag_filter not in ['', None]:
+        jumps = jumps.filter(jump_tags__external_id=uuid.UUID(tag_filter))
+    transitions = Transition.objects.filter(jump__in=jumps)
     for block_name in Point.objects.get_blocks():
         point = Point.objects.get(name=block_name)
         transitions = transitions.exclude(point_1=point, point_2=point)
