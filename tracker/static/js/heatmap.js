@@ -1,8 +1,3 @@
-function toggle(el){
-    var value = el.options[el.selectedIndex].value;
-    genBlockTrend(apiResult[value],'#time_trend');
-}
-
 async function fetchApiData(Url) {
           const response = await fetch(Url);
           const data = await response.json();
@@ -23,7 +18,10 @@ window.addEventListener('load', function() {
     useApiResult();
 });
 
-
+function toggle(el){
+    var value = el.options[el.selectedIndex].value;
+    genBlockTrend(trendResults[value],'#time_trend');
+}
 
 function barChart(jsonData, selectedId, yScaleDomain) {
     d3.json(jsonData).then(function(data) {
