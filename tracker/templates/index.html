@@ -1,0 +1,39 @@
+{% extends 'main.html' %}
+{% block content %}
+{% load static %}
+<main>
+    <div class="container col-xxl-8 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+            <div class="col-10 col-sm-8 col-lg-6">
+                <img src="https://footracker-statics.s3.sa-east-1.amazonaws.com/static/about/example-2.png"
+                     class="d-block mx-lg-auto img-fluid" loading="lazy">
+            </div>
+            <div class="col-lg-6">
+                <h1 class="display-5 fw-bold lh-1 mb-3">
+                    Start training smarter by tracking everything
+                </h1>
+                <p class="lead">
+                    Every pool, every movement.
+                    Track it all and get to know your team's performance
+                </p>
+            </div>
+        </div>
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+            <div class="col-lg-6">
+                <h1 class="display-5 fw-bold lh-1 mb-3">
+                    Summarized report, highlighting strengths and weaknesses
+                </h1>
+                <p class="lead">
+                    How does your team measure up against others?
+                    Is it improving?
+                    Are there specific blocks that need attention?
+                </p>
+            </div>
+            <div class="col-10 col-sm-8 col-lg-6">
+                <img src="https://footracker-statics.s3.sa-east-1.amazonaws.com/static/about/example-1.png"
+                     class="d-block mx-lg-auto img-fluid" loading="lazy">
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

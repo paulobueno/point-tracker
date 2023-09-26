@@ -12,9 +12,7 @@ from users.models import User
 
 
 def index(request):
-    context = {"teams": Team.objects.all(),
-               "points": Pool.point_1.field.choices}
-    return render(request, 'index.html', context)
+    return render(request, 'index.html')
 
 
 @login_required
