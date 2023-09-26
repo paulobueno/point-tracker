@@ -9,6 +9,7 @@ urlpatterns = [
     path('athlete_register', views.athlete_register),
     path('athletes', views.athletes),
     path('', views.teams, name='index'),
+    path('about', views.about),
     path('track/select-team', views.track_select_team),
     path('team/<uuid:team_external_id>', views.team_page),
     path('jumps/<uuid:team_external_id>', views.team_jumps, name='team_jumps'),

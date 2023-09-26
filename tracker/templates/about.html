@@ -1,0 +1,35 @@
+{% extends 'main.html' %}
+{% block content %}
+{% load static %}
+<main>
+    <div class="container col-xxl-8 px-4 py-5">
+        <div class="row flex-lg-row-reverse align-items-center g-5 py-5">
+            <div class="col-10 col-sm-8 col-lg-6">
+                <img src="https://footracker-statics.s3.sa-east-1.amazonaws.com/static/about/developer.png"
+                     class="d-block float-left img-fluid rounded "
+                     width="400"
+                     height="400"
+                     loading="lazy">
+                <p><small>Credits @pccavera</small></p>
+            </div>
+            <div class="col-lg-6">
+                <h1 class="display-5 fw-bold lh-1 mb-3">
+                    The developer
+                </h1>
+                <p class="lead">
+                    Bueno started skydiving in 2013 and is currently the Outside-Center of the
+                    <a target="_blank" href="https://www.fooflyers.com.br/">Foo Flyers</a>
+                    4way team. Driven by the desire to understand his team's performance,
+                    he has been building this website to achieve that goal.<br>
+                </p>
+                <p>
+                    Want to contribute with ideas or code? let's talk!<br>
+                    paulob.bruno@gmail.com<br>
+                    <a target="_blank" href="https://www.linkedin.com/in/bueno-paulo/">LinkedIn</a><br>
+                    <a target="_blank" href="https://github.com/paulobueno">GitHub</a><br>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
