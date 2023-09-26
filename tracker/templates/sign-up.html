@@ -1,0 +1,35 @@
+{% extends 'main.html' %}
+{% block content %}
+{% load static %}
+<main>
+    <div class="container col-xxl-8 px-4 py-5">
+        <div class="row flex-lg-row align-items-center g-5 py-5">
+            <div class="col-lg-6">
+                <h3 class="fw-bold lh-1 mb-3">
+                    Log-in creation
+                </h3>
+                <p> Send an e-mail to <strong>paulob.bruno@gmail.com</strong> with the following information:</p>
+                <ul>
+                    <li>Team:
+                        <ul>
+                            <li>Name</li>
+                            <li>Foundation</li>
+                            <li>Instagram</li>
+                            <li>Country</li>
+                            <li>Category (Open, inter or hooky)</li>
+                        </ul>
+                    </li>
+                    <li>Members:
+                        <ul>
+                            <li>Name</li>
+                            <li>Nickname</li>
+                            <li>Country</li>
+                            <li>Position</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

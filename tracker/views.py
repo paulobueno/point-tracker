@@ -249,5 +249,10 @@ def track_select_team(request):
         selected_team_uuid = request.POST.get('team-select')
     return redirect('/track?selected_team_uuid=' + selected_team_uuid)
 
+
 def about(request):
     return render(request, 'about.html')
+
+
+def sign_up(request):
+    return render(request, 'sign-up.html')
