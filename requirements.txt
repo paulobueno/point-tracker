@@ -42,7 +42,7 @@ pyrsistent==0.19.3
 PySocks==1.7.1
 python-dateutil==2.8.2
 python-decouple==3.7
-PyYAML==5.4.1
+PyYAML==5.3.1
 requests==2.26.0
 requests-toolbelt==0.10.1
 rich==13.3.1
