@@ -1,0 +1,30 @@
+name: Exec Django Tests
+run-name: Exec Django Tests
+on: [push]
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: abcde
+          POSTGRES_PASSWORD: abcde
+          POSTGRES_DB: abcde
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Move settings.example.ini -> settings.ini
+        run: mv ./point_tracker/settings.example.ini ./point_tracker/settings.ini
+      - name: Run tests
+        run: python manage.py test
