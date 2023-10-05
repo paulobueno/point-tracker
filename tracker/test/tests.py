@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.db.models import Avg
 from tracker.models import Point, Pool, Team, Jump, Transition, Jump_Tags
 from tracker.test import test_helper
-from tracker.views import teams
+from tracker.views import index
 from django.http import HttpRequest
 
 
@@ -11,13 +11,13 @@ class HomePageTest(TestCase):
 
     def test_root_url_resolvers_to_home_page_view(self):
         found = resolve('/')
-        self.assertEqual(found.func, teams)
+        self.assertEqual(found.func, index)
 
     def test_home_page_returns_correct_html(self):
         request = HttpRequest()
-        response = teams(request)
+        response = index(request)
         html = response.content.decode('utf8')
-        self.assertIn('<title>FooTracker</title>', html)
+        self.assertIn('<title>FooTracker - beta</title>', html)
         self.assertTrue(html.startswith('<!doctype html>'))
         self.assertTrue(html.endswith('</html>'))
 
