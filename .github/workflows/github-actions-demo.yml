@@ -4,6 +4,17 @@ on: [push]
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: abcde
+          POSTGRES_PASSWORD: abcde
+          POSTGRES_DB: abcde
+
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
